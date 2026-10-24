@@ -1,0 +1,52 @@
+# Render Blueprint: one free web service hosts both the React site and the API.
+# Database: Neon (free PostgreSQL). Files: Cloudflare R2 (free S3-compatible).
+# Fill the `sync: false` values in the Render dashboard when creating it.
+services:
+  - type: web
+    name: estateflow-crm
+    runtime: node
+    plan: free
+    buildCommand: >-
+      cd frontend && npm ci --include=dev && npm run build &&
+      cd ../backend && npm ci --include=dev && npm run build
+    startCommand: cd backend && npm run start:render
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: SWAGGER_ENABLED
+        value: "false"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        sync: false
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: DB_SSL
+        value: "true"
+      - key: STORAGE_DRIVER
+        value: s3
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_REGION
+        value: auto
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false

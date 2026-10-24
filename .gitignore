@@ -1,0 +1,21 @@
+# Dependencies & builds
+node_modules/
+dist/
+dist-ssr/
+coverage/
+*.tsbuildinfo
+
+# Secrets — only the .env.example templates are committed
+.env
+.env.*
+!.env.example
+
+# Uploaded files (development storage)
+backend/uploads/
+
+# Logs & editor files
+*.log
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json

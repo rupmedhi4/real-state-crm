@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Estateflow — Real Estate CRM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#152019; --ink-soft:#1f2b22; --ivory:#f6f2e8; --surface:#ffffff;
+  --text:#1c231e; --muted:#737262; --border:#e6e0d2;
+  --gold:#ab8a3f; --gold-ink:#2a2208;
+  --forest:#2d5e45; --forest-soft:#e8f0ea; --forest-ink:#ffffff;
+  --red:#a3432b; --red-soft:#fbe9e3;
+  --blue:#2d548f; --blue-soft:#e9f0fb;
+  --amber:#8a5f06; --amber-soft:#fdf1d9;
+  --purple:#6b3fa0; --purple-soft:#f1e8fb;
+  --gray:#5c5c52; --gray-soft:#eeece3;
+  color-scheme: light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ink:#0f1512; --ink-soft:#161d18; --ivory:#13151a; --surface:#1a1e1a;
+    --text:#e9e6da; --muted:#9a9686; --border:#2d3129;
+    --gold:#cda564; --gold-ink:#1d1708;
+    --forest:#4f9671; --forest-soft:#17271d; --forest-ink:#07140d;
+    --red:#d97857; --red-soft:#2b1812;
+    --blue:#8db0f0; --blue-soft:#121c2c;
+    --amber:#e8bd6a; --amber-soft:#2a2008;
+    --purple:#c6a4ef; --purple-soft:#211a2c;
+    --gray:#b1ad9d; --gray-soft:#22241e;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#0f1512; --ink-soft:#161d18; --ivory:#13151a; --surface:#1a1e1a;
+  --text:#e9e6da; --muted:#9a9686; --border:#2d3129;
+  --gold:#cda564; --gold-ink:#1d1708;
+  --forest:#4f9671; --forest-soft:#17271d; --forest-ink:#07140d;
+  --red:#d97857; --red-soft:#2b1812;
+  --blue:#8db0f0; --blue-soft:#121c2c;
+  --amber:#e8bd6a; --amber-soft:#2a2008;
+  --purple:#c6a4ef; --purple-soft:#211a2c;
+  --gray:#b1ad9d; --gray-soft:#22241e;
+  color-scheme: dark;
+}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--ivory);color:var(--text);font-family:'Inter',ui-sans-serif,system-ui,sans-serif;font-size:14px;}
+h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:600;margin:0;}
+a{color:inherit;}
+button{font:inherit;cursor:pointer;}
+.app{display:flex;min-height:100vh;}
+
+/* Sidebar */
+.sidebar{width:230px;background:var(--ink);color:#d9d6c8;flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;transition:width .15s;}
+.sidebar.collapsed{width:68px;}
+.sidebar.collapsed .label,.sidebar.collapsed .brand-name,.sidebar.collapsed .soon{display:none;}
+.brand{display:flex;align-items:center;gap:10px;padding:18px 16px;border-bottom:1px solid #2a332c;}
+.brand .mark{width:32px;height:32px;border-radius:8px;background:var(--gold);color:var(--gold-ink);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.brand-name{font-family:'Fraunces',serif;font-weight:600;color:#fff;font-size:1.08rem;}
+nav{padding:10px;display:flex;flex-direction:column;gap:1px;flex:1;}
+.navgroup-title{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:#6c7066;padding:14px 10px 4px;}
+nav a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;text-decoration:none;color:#c3c0b2;font-size:.86rem;}
+nav a .ic{width:18px;text-align:center;flex-shrink:0;}
+nav a:hover{background:var(--ink-soft);color:#fff;}
+nav a.active{background:var(--forest);color:#fff;}
+nav a.soon{opacity:.55;}
+nav a .soon{font-size:.63rem;background:#2a332c;padding:1px 6px;border-radius:999px;margin-left:auto;}
+.collapse-btn{margin:10px;padding:8px;border:none;background:var(--ink-soft);color:#c3c0b2;border-radius:8px;}
+
+@media(max-width:900px){
+  .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:30;transform:translateX(-100%);transition:transform .2s;}
+  .sidebar.open{transform:translateX(0);}
+  .collapse-btn{display:none;}
+}
+
+/* Main */
+.main{flex:1;min-width:0;display:flex;flex-direction:column;}
+.topbar{display:flex;align-items:center;gap:14px;padding:12px 22px;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5;}
+.menu-btn{display:none;border:none;background:none;font-size:1.3rem;color:var(--text);}
+.gsearch{flex:1;max-width:420px;position:relative;}
+.gsearch input{width:100%;padding:9px 14px 9px 32px;border-radius:9px;border:1px solid var(--border);background:var(--ivory);color:var(--text);font:inherit;}
+.gsearch .ic{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);}
+.topbar-right{display:flex;align-items:center;gap:10px;margin-left:auto;}
+.icon-btn{position:relative;border:1px solid var(--border);background:var(--surface);border-radius:9px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:var(--text);}
+.icon-btn .dot{position:absolute;top:5px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--red);}
+.user-chip{display:flex;align-items:center;gap:8px;padding:5px 10px 5px 5px;border:1px solid var(--border);border-radius:999px;background:var(--surface);}
+.user-chip .av{width:26px;height:26px;border-radius:50%;background:var(--forest);color:var(--forest-ink);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;}
+.create-btn{background:var(--forest);color:var(--forest-ink);border:none;padding:9px 14px;border-radius:9px;font-weight:600;font-size:.85rem;position:relative;}
+.create-menu{display:none;position:absolute;right:0;top:calc(100% + 6px);background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.12);min-width:170px;overflow:hidden;z-index:10;}
+.create-menu.open{display:block;}
+.create-menu button{display:block;width:100%;text-align:left;padding:9px 14px;border:none;background:none;color:var(--text);font-size:.84rem;}
+.create-menu button:hover{background:var(--ivory);}
+
+.content{padding:22px 26px 60px;max-width:1360px;width:100%;margin:0 auto;}
+.view{display:none;}
+.view.active{display:block;}
+.page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:16px;}
+.page-head h1{font-size:1.5rem;}
+.page-head p{margin:2px 0 0;color:var(--muted);font-size:.86rem;}
+.page-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.btn{border:1px solid var(--border);background:var(--surface);color:var(--text);padding:8px 13px;border-radius:8px;font-size:.83rem;font-weight:500;}
+.btn.primary{background:var(--forest);color:var(--forest-ink);border:none;font-weight:600;}
+.btn.ghost{background:none;}
+.btn.sm{padding:5px 9px;font-size:.78rem;}
+.btn.danger{color:var(--red);border-color:var(--red-soft);}
+
+/* KPI strip */
+.kpi-strip{display:flex;border:1px solid var(--border);border-radius:12px;background:var(--surface);overflow-x:auto;margin-bottom:22px;}
+.kpi{flex:1;min-width:120px;padding:13px 16px;border-right:1px solid var(--border);}
+.kpi:last-child{border-right:none;}
+.kpi b{display:block;font-family:'Fraunces',serif;font-size:1.35rem;font-weight:600;}
+.kpi span{font-size:.73rem;color:var(--muted);}
+
+section.block{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:20px;overflow:hidden;}
+.block-head{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--border);}
+.block-head h2{font-size:.98rem;font-family:'Inter';font-weight:700;}
+.block-head .meta{color:var(--muted);font-size:.78rem;}
+
+/* Tables */
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:.83rem;}
+th{text-align:left;padding:10px 14px;color:var(--muted);font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;border-bottom:1px solid var(--border);white-space:nowrap;}
+td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle;white-space:nowrap;}
+tr:last-child td{border-bottom:none;}
+tr.rowclick{cursor:pointer;}
+tr.rowclick:hover{background:var(--ivory);}
+.cell-name{display:flex;align-items:center;gap:9px;white-space:nowrap;}
+.avatar{width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--border);}
+.avatar-fallback{width:30px;height:30px;border-radius:50%;background:var(--gold);color:var(--gold-ink);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.7rem;flex-shrink:0;}
+.name-sub{font-weight:600;}
+.name-sub small{display:block;font-weight:400;color:var(--muted);font-size:.74rem;}
+.badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:.71rem;font-weight:600;white-space:nowrap;}
+.row-actions{display:flex;gap:6px;}
+.row-actions button{border:1px solid var(--border);background:var(--surface);border-radius:6px;width:28px;height:28px;font-size:.8rem;}
+.empty-row td{text-align:center;color:var(--muted);padding:34px;}
+.checkbox{width:15px;height:15px;}
+
+/* Kanban */
+.pipeline{display:flex;gap:12px;overflow-x:auto;padding:4px 2px 10px;}
+.pcol{background:var(--surface);border:1px solid var(--border);border-radius:12px;width:230px;flex-shrink:0;padding:10px;min-height:120px;}
+.pcol.dragover{outline:2px dashed var(--forest);outline-offset:2px;}
+.pcol-head{display:flex;justify-content:space-between;font-size:.78rem;font-weight:700;margin-bottom:8px;padding:0 2px;}
+.pcol-head .count{color:var(--muted);font-weight:500;}
+.pcard{background:var(--ivory);border:1px solid var(--border);border-radius:9px;padding:9px;margin-bottom:7px;font-size:.78rem;cursor:grab;}
+.pcard .pname{font-weight:700;margin-bottom:2px;}
+.pcard .pmeta{color:var(--muted);font-size:.72rem;}
+.pcard .ptag{display:inline-block;margin-top:5px;font-size:.65rem;padding:2px 7px;border-radius:999px;background:var(--blue-soft);color:var(--blue);}
+
+.toggle-group{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.toggle-group button{padding:7px 12px;border:none;background:var(--surface);font-size:.8rem;color:var(--muted);}
+.toggle-group button.active{background:var(--forest);color:var(--forest-ink);}
+
+/* Property grid */
+.prop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;}
+.prop-card{background:var(--surface);border:1px solid var(--border);border-radius:13px;overflow:hidden;}
+.prop-img{height:130px;background:var(--forest-soft);display:flex;align-items:center;justify-content:center;color:var(--forest);font-size:1.6rem;overflow:hidden;}
+.prop-img img{width:100%;height:100%;object-fit:cover;}
+.prop-body{padding:12px 13px;}
+.prop-body h4{font-size:.9rem;margin-bottom:2px;font-family:'Inter';font-weight:700;}
+.prop-body .ploc{color:var(--muted);font-size:.78rem;margin-bottom:6px;}
+.prop-price{font-weight:700;color:var(--forest);font-family:'Fraunces',serif;font-size:1.05rem;}
+.prop-specs{display:flex;gap:8px;color:var(--muted);font-size:.74rem;margin-top:6px;flex-wrap:wrap;}
+.prop-actions{display:flex;gap:6px;margin-top:10px;}
+
+/* Activity feed */
+.feed{padding:6px 18px 14px;}
+.feed-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px dashed var(--border);}
+.feed-item:last-child{border-bottom:none;}
+.feed-ic{width:30px;height:30px;border-radius:50%;background:var(--forest-soft);color:var(--forest);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.85rem;}
+.feed-text b{font-weight:600;}
+.feed-time{color:var(--muted);font-size:.72rem;}
+
+/* Source bars */
+.source-bars{padding:14px 18px;}
+.source-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:.8rem;}
+.source-row .slabel{width:110px;flex-shrink:0;color:var(--muted);}
+.source-row .sbar-wrap{flex:1;background:var(--ivory);border-radius:6px;height:9px;overflow:hidden;}
+.source-row .sbar{height:100%;background:var(--gold);}
+.source-row .scount{width:30px;text-align:right;font-weight:700;flex-shrink:0;}
+
+/* Modal */
+.modal-backdrop{position:fixed;inset:0;background:rgba(12,14,10,.5);display:none;align-items:center;justify-content:center;padding:16px;z-index:40;}
+.modal-backdrop.open{display:flex;}
+.modal{background:var(--surface);border-radius:16px;padding:0;width:100%;max-width:560px;max-height:90vh;overflow:hidden;border:1px solid var(--border);display:flex;flex-direction:column;}
+.modal-h{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.modal-h h3{font-size:1.1rem;}
+.modal-h button{border:none;background:none;font-size:1.2rem;color:var(--muted);}
+.modal-body{padding:16px 20px;overflow-y:auto;}
+.modal-foot{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
+.section-label{font-size:.7rem;letter-spacing:.04em;text-transform:uppercase;color:var(--gold);font-weight:700;margin:16px 0 6px;}
+.section-label:first-child{margin-top:0;}
+label{display:block;font-size:.79rem;color:var(--muted);margin:8px 0 4px;}
+input,select,textarea{width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--ivory);color:var(--text);font:inherit;}
+textarea{min-height:55px;resize:vertical;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.photo-row{display:flex;align-items:center;gap:12px;}
+.img-drop{border:1.5px dashed var(--border);border-radius:10px;padding:16px;text-align:center;color:var(--muted);font-size:.8rem;cursor:pointer;}
+.img-thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.img-thumb{position:relative;width:62px;height:62px;border-radius:8px;overflow:hidden;border:1px solid var(--border);}
+.img-thumb img{width:100%;height:100%;object-fit:cover;}
+.img-thumb .rm{position:absolute;top:2px;right:2px;background:rgba(0,0,0,.6);color:#fff;border:none;width:17px;height:17px;border-radius:50%;font-size:.65rem;line-height:1;}
+.img-thumb.cover::after{content:'★';position:absolute;bottom:2px;left:2px;background:var(--gold);color:var(--gold-ink);font-size:.6rem;padding:1px 4px;border-radius:4px;}
+
+.toast-wrap{position:fixed;bottom:18px;right:18px;display:flex;flex-direction:column;gap:8px;z-index:60;}
+.toast{background:var(--ink);color:#fff;padding:10px 16px;border-radius:9px;font-size:.84rem;box-shadow:0 8px 24px rgba(0,0,0,.2);}
+
+.demo-pill{display:inline-flex;align-items:center;gap:5px;font-size:.68rem;background:var(--amber-soft);color:var(--amber);padding:3px 9px;border-radius:999px;font-weight:700;margin-left:8px;}
+.soon-page{padding:60px 20px;text-align:center;color:var(--muted);}
+.soon-page h2{color:var(--text);margin-bottom:8px;}
+
+@media(max-width:700px){
+  .content{padding:16px;}
+  .two-col,.three-col{grid-template-columns:1fr;}
+  .menu-btn{display:block;}
+  td,th{padding:9px 10px;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><div class="mark">🏠</div><span class="brand-name">Estateflow</span></div>
+    <nav id="navList"></nav>
+    <button class="collapse-btn" onclick="toggleSidebar()">⟨ Collapse</button>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <button class="menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+      <div class="gsearch"><span class="ic">🔍</span><input id="globalSearch" placeholder="Search leads, clients, properties..." oninput="renderCurrentView()"></div>
+      <div class="topbar-right">
+        <div style="position:relative;">
+          <button class="create-btn" onclick="toggleCreateMenu()">+ Create New</button>
+          <div class="create-menu" id="createMenu">
+            <button onclick="openContactModal(null,'New');closeCreateMenu()">Lead</button>
+            <button onclick="openContactModal(null,'Qualified');closeCreateMenu()">Client</button>
+            <button onclick="openPropertyModal();closeCreateMenu()">Property</button>
+            <button onclick="openDealModal();closeCreateMenu()">Deal</button>
+            <button onclick="openVisitModal();closeCreateMenu()">Site Visit</button>
+          </div>
+        </div>
+        <button class="icon-btn" title="Notifications">🔔<span class="dot"></span></button>
+        <div class="user-chip"><div class="av">AG</div><span>Agent</span></div>
+      </div>
+    </div>
+
+    <div class="content" id="content">
+      <!-- OVERVIEW -->
+      <div class="view active" id="view-overview">
+        <div class="page-head">
+          <div><h1>Overview <span class="demo-pill">● Demo Data</span></h1><p id="todayDate"></p></div>
+          <div class="page-actions">
+            <button class="btn" onclick="exportCSV('contacts')">Export CSV</button>
+            <button class="btn primary" onclick="openContactModal(null,'New')">+ Add Lead</button>
+          </div>
+        </div>
+        <div class="kpi-strip" id="kpiStrip"></div>
+
+        <section class="block">
+          <div class="block-head"><h2>Recent Leads</h2><span class="meta" id="leadsCountMeta"></span></div>
+          <div class="table-wrap"><table><thead><tr>
+            <th></th><th>Lead</th><th>Phone</th><th>Property</th><th>Budget</th><th>Source</th><th>Agent</th><th>Stage</th><th>Next Follow-up</th><th>Actions</th>
+          </tr></thead><tbody id="tblRecentLeads"></tbody></table></div>
+        </section>
+
+        <div class="two-col" style="grid-template-columns:1.3fr 1fr;align-items:start;gap:16px;">
+          <section class="block">
+            <div class="block-head"><h2>Today's Follow-ups</h2></div>
+            <div class="table-wrap"><table><thead><tr><th>Client</th><th>Phone</th><th>Task</th><th>Priority</th><th>Agent</th></tr></thead>
+            <tbody id="tblFollowups"></tbody></table></div>
+          </section>
+          <section class="block">
+            <div class="block-head"><h2>Lead Source Performance</h2></div>
+            <div class="source-bars" id="sourceBars"></div>
+          </section>
+        </div>
+
+        <div class="two-col" style="grid-template-columns:1fr 1fr;align-items:start;gap:16px;">
+          <section class="block">
+            <div class="block-head"><h2>Upcoming Site Visits</h2></div>
+            <div class="table-wrap"><table><thead><tr><th>Client</th><th>Property</th><th>Date</th><th>Time</th><th>Status</th></tr></thead>
+            <tbody id="tblVisitsOverview"></tbody></table></div>
+          </section>
+          <section class="block">
+            <div class="block-head"><h2>Recent Activity</h2></div>
+            <div class="feed" id="activityFeed"></div>
+          </section>
+        </div>
+      </div>
+
+      <!-- LEADS -->
+      <div class="view" id="view-leads">
+        <div class="page-head">
+          <div><h1>Leads</h1><p>Naye enquiries se lekar qualified leads tak</p></div>
+          <div class="page-actions">
+            <div class="toggle-group"><button class="active" onclick="setLeadsView('table',this)">Table</button><button onclick="setLeadsView('kanban',this)">Pipeline</button></div>
+            <button class="btn" onclick="exportCSV('contacts')">Export CSV</button>
+            <button class="btn primary" onclick="openContactModal(null,'New')">+ Add Lead</button>
+          </div>
+        </div>
+        <div id="leadsTableWrap" class="block">
+          <div class="block-head"><h2>All Leads</h2><span class="meta" id="leadsAllMeta"></span></div>
+          <div class="table-wrap"><table><thead><tr>
+            <th><input type="checkbox" class="checkbox" onclick="toggleAllLeads(this)"></th><th>Lead</th><th>Phone</th><th>Property</th><th>Budget</th><th>Source</th><th>Agent</th><th>Stage</th><th>Last Contact</th><th>Next Follow-up</th><th>Actions</th>
+          </tr></thead><tbody id="tblAllLeads"></tbody></table></div>
+        </div>
+        <div id="leadsKanbanWrap" style="display:none;">
+          <div class="pipeline" id="leadsPipeline"></div>
+        </div>
+      </div>
+
+      <!-- CLIENTS -->
+      <div class="view" id="view-clients">
+        <div class="page-head">
+          <div><h1>Clients</h1><p>Poori contact directory</p></div>
+          <div class="page-actions"><button class="btn" onclick="exportCSV('clients')">Export CSV</button><button class="btn primary" onclick="openContactModal(null,'Qualified')">+ Add Client</button></div>
+        </div>
+        <div class="block">
+          <div class="block-head"><h2>All Clients</h2><span class="meta" id="clientsMeta"></span></div>
+          <div class="table-wrap"><table><thead><tr>
+            <th>Profile</th><th>Phone</th><th>Email</th><th>Interested In</th><th>Budget</th><th>Agent</th><th>Last Interaction</th><th>Status</th><th>Actions</th>
+          </tr></thead><tbody id="tblClients"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- PROPERTIES -->
+      <div class="view" id="view-properties">
+        <div class="page-head">
+          <div><h1>Properties</h1><p>Inventory — sale, rent aur lease listings</p></div>
+          <div class="page-actions">
+            <div class="toggle-group"><button class="active" onclick="setPropView('grid',this)">Grid</button><button onclick="setPropView('table',this)">Table</button></div>
+            <button class="btn primary" onclick="openPropertyModal()">+ Add Property</button>
+          </div>
+        </div>
+        <div id="propGridWrap" class="prop-grid"></div>
+        <div id="propTableWrap" class="block" style="display:none;">
+          <div class="table-wrap"><table><thead><tr><th>Property</th><th>Type</th><th>Price</th><th>Location</th><th>Status</th><th>Agent</th><th>Actions</th></tr></thead>
+          <tbody id="tblProperties"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- DEALS -->
+      <div class="view" id="view-deals">
+        <div class="page-head">
+          <div><h1>Deals &amp; Sales Pipeline</h1><p>Opportunities ko close tak track karein</p></div>
+          <div class="page-actions"><div class="toggle-group"><button class="active" onclick="setDealsView('kanban',this)">Pipeline</button><button onclick="setDealsView('table',this)">Table</button></div>
+          <button class="btn primary" onclick="openDealModal()">+ Add Deal</button></div>
+        </div>
+        <div class="kpi-strip" id="dealsKpi"></div>
+        <div id="dealsKanbanWrap"><div class="pipeline" id="dealsPipeline"></div></div>
+        <div id="dealsTableWrap" class="block" style="display:none;">
+          <div class="table-wrap"><table><thead><tr><th>Deal</th><th>Client</th><th>Property</th><th>Value</th><th>Stage</th><th>Probability</th><th>Closing</th><th>Agent</th><th>Actions</th></tr></thead>
+          <tbody id="tblDeals"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- SITE VISITS -->
+      <div class="view" id="view-visits">
+        <div class="page-head">
+          <div><h1>Site Visits</h1><p>Property viewings schedule karein aur track karein</p></div>
+          <div class="page-actions"><button class="btn primary" onclick="openVisitModal()">+ Schedule Visit</button></div>
+        </div>
+        <div class="block">
+          <div class="table-wrap"><table><thead><tr><th>Client</th><th>Property</th><th>Date</th><th>Time</th><th>Agent</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="tblVisits"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- TASKS -->
+      <div class="view" id="view-tasks">
+        <div class="page-head">
+          <div><h1>Tasks &amp; Follow-ups</h1><p>Daily agenda — kuch bhi chhutna nahi chahiye</p></div>
+          <div class="page-actions"><button class="btn primary" onclick="openTaskModal()">+ Add Task</button></div>
+        </div>
+        <div class="toggle-group" id="taskTabs" style="margin-bottom:14px;"></div>
+        <div class="block">
+          <div class="table-wrap"><table><thead><tr><th>Title</th><th>Related To</th><th>Type</th><th>Due</th><th>Priority</th><th>Agent</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="tblTasks"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- COMMUNICATIONS -->
+      <div class="view" id="view-comms">
+        <div class="page-head">
+          <div><h1>Communications</h1><p>Har call, email, WhatsApp aur note ka ek hi timeline</p></div>
+          <div class="page-actions"><button class="btn primary" onclick="openActivityModal()">+ Log Activity</button></div>
+        </div>
+        <p style="color:var(--muted);font-size:.8rem;margin:-6px 0 16px;">Call/Email/WhatsApp buttons yahan se sirf aapka phone/email app kholte hain — koi message yahan se automatically bhejta nahi hai.</p>
+        <div class="block">
+          <div class="table-wrap"><table><thead><tr><th>Date</th><th>Type</th><th>Contact</th><th>Agent</th><th>Outcome</th><th>Notes</th><th>Actions</th></tr></thead>
+          <tbody id="tblComms"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- MARKETING -->
+      <div class="view" id="view-marketing">
+        <div class="page-head">
+          <div><h1>Marketing &amp; Lead Sources</h1><p>Har source kitna perform kar raha hai</p></div>
+        </div>
+        <section class="block">
+          <div class="block-head"><h2>Source Performance</h2></div>
+          <div class="table-wrap"><table><thead><tr><th>Source</th><th>Leads</th><th>Qualified+</th><th>Deals Won</th><th>Conversion</th></tr></thead>
+          <tbody id="tblMarketing"></tbody></table></div>
+        </section>
+        <section class="block">
+          <div class="block-head"><h2>Demo Lead Capture Form <span class="demo-pill">Test Only</span></h2><span class="meta">Property enquiry form ka preview — submit karne se ek test lead Leads module me save hota hai</span></div>
+          <div class="modal-body" style="max-width:420px;">
+            <label>Full Name</label><input id="m_name" placeholder="Visitor name">
+            <label>Phone</label><input id="m_phone" placeholder="98xxxxxxxx">
+            <label>Interested Property</label><input id="m_property" placeholder="e.g. 2BHK in Dispur">
+            <div style="margin-top:12px;"><button class="btn primary" onclick="submitTestEnquiry()">Submit Test Enquiry</button></div>
+          </div>
+        </section>
+      </div>
+
+      <!-- AGENTS -->
+      <div class="view" id="view-agents">
+        <div class="page-head">
+          <div><h1>Agents &amp; Teams</h1><p>Team performance ek nazar me</p></div>
+          <div class="page-actions"><button class="btn primary" onclick="openAgentModal()">+ Add Agent</button></div>
+        </div>
+        <div class="block">
+          <div class="table-wrap"><table><thead><tr><th>Agent</th><th>Role</th><th>Phone</th><th>Assigned Leads</th><th>Active Deals</th><th>Site Visits</th><th>Follow-ups Due</th><th>Won Deals</th><th>Actions</th></tr></thead>
+          <tbody id="tblAgents"></tbody></table></div>
+        </div>
+        <p style="color:var(--muted);font-size:.78rem;margin-top:10px;">Note: yeh frontend-only role list hai, access-control/security ke liye nahi — real permissions ke liye backend chahiye hoga.</p>
+      </div>
+
+      <!-- REPORTS -->
+      <div class="view" id="view-reports">
+        <div class="page-head">
+          <div><h1>Reports &amp; Analytics</h1><p>Sab kuch actual records se calculate hota hai</p></div>
+          <div class="page-actions"><button class="btn" onclick="exportCSV('contacts')">Export Leads CSV</button></div>
+        </div>
+        <div class="kpi-strip" id="reportsKpi"></div>
+        <div class="two-col" style="grid-template-columns:1fr 1fr;align-items:start;gap:16px;">
+          <section class="block">
+            <div class="block-head"><h2>Lead Status Distribution</h2></div>
+            <div class="source-bars" id="statusBars"></div>
+          </section>
+          <section class="block">
+            <div class="block-head"><h2>Conversion Funnel</h2></div>
+            <div class="source-bars" id="funnelBars"></div>
+          </section>
+        </div>
+        <section class="block">
+          <div class="block-head"><h2>Agent Performance</h2></div>
+          <div class="table-wrap"><table><thead><tr><th>Agent</th><th>Leads</th><th>Deals Won</th><th>Revenue (Won)</th><th>Follow-ups Done</th></tr></thead>
+          <tbody id="tblAgentPerf"></tbody></table></div>
+        </section>
+        <section class="block">
+          <div class="block-head"><h2>Revenue by Month (Won Deals)</h2></div>
+          <div class="table-wrap"><table><thead><tr><th>Month</th><th>Deals Won</th><th>Revenue</th></tr></thead>
+          <tbody id="tblRevenue"></tbody></table></div>
+        </section>
+      </div>
+
+      <!-- DOCUMENTS -->
+      <div class="view" id="view-documents">
+        <div class="page-head">
+          <div><h1>Documents</h1><p>Properties, clients aur deals se judi files</p></div>
+          <div class="page-actions"><button class="btn primary" onclick="openDocumentModal()">+ Upload Document</button></div>
+        </div>
+        <p style="color:var(--muted);font-size:.8rem;margin:-6px 0 16px;">Files is browser ke local storage me save hoti hain (demo ke liye) — bade/sensitive files ke liye real cloud storage integration chahiye hoga.</p>
+        <div class="block">
+          <div class="table-wrap"><table><thead><tr><th>File</th><th>Category</th><th>Related To</th><th>Uploaded</th><th>Actions</th></tr></thead>
+          <tbody id="tblDocs"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="view" id="view-settings">
+        <div class="page-head"><div><h1>Settings</h1><p>Company profile aur demo data controls</p></div></div>
+        <div class="two-col" style="grid-template-columns:1fr 1fr;align-items:start;gap:16px;">
+          <section class="block">
+            <div class="block-head"><h2>Company Profile</h2></div>
+            <div class="modal-body">
+              <label>Company Name</label><input id="s_company">
+              <label>Tagline</label><input id="s_tagline">
+              <div class="two-col"><div><label>Currency</label><input id="s_currency" value="INR" disabled></div><div><label>Date Format</label><input id="s_dateformat" value="DD/MM/YYYY" disabled></div></div>
+              <div style="margin-top:12px;"><button class="btn primary" onclick="saveSettings()">Save Profile</button></div>
+            </div>
+          </section>
+          <section class="block">
+            <div class="block-head"><h2>Lead Sources &amp; Stages</h2></div>
+            <div class="modal-body">
+              <label style="margin-top:0;">Configured Lead Sources</label>
+              <p style="font-size:.82rem;color:var(--text);">Website, Landing Page, Facebook/Instagram Ads, Google Ads, WhatsApp Enquiry, Phone Call, Walk-in, Referral, 99acres, MagicBricks, Housing.com, Other</p>
+              <label>Configured Pipeline Stages</label>
+              <p style="font-size:.82rem;color:var(--text);" id="stagesList"></p>
+            </div>
+          </section>
+        </div>
+        <section class="block">
+          <div class="block-head"><h2>Demo Data &amp; Backup</h2></div>
+          <div class="modal-body" style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn" onclick="exportBackup()">⬇ Export All Data (JSON)</button>
+            <label class="btn" style="margin:0;">⬆ Import Backup<input type="file" accept="application/json" style="display:none;" onchange="importBackup(event)"></label>
+            <button class="btn danger" onclick="resetDemoData()">↺ Reset to Demo Data</button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="contactBackdrop">
+  <div class="modal">
+    <div class="modal-h"><h3 id="contactModalTitle">New Lead</h3><button onclick="closeModal('contactBackdrop')">✕</button></div>
+    <div class="modal-body">
+      <div class="photo-row">
+        <div id="contactPhotoWrap"><div class="avatar-fallback" style="width:56px;height:56px;">?</div></div>
+        <div style="flex:1;"><label style="margin:0;">Photo</label><input type="file" id="c_photo_input" accept="image/*" onchange="handleContactPhoto(event)"></div>
+      </div>
+      <div class="section-label">Basic Details</div>
+      <label>Full Name *</label><input id="c_name">
+      <div class="three-col">
+        <div><label>Phone</label><input id="c_phone"></div>
+        <div><label>WhatsApp</label><input id="c_whatsapp"></div>
+        <div><label>Email</label><input id="c_email"></div>
+      </div>
+      <div class="two-col"><div><label>City</label><input id="c_city"></div><div><label>Address</label><input id="c_address"></div></div>
+      <div class="section-label">Requirement</div>
+      <div class="two-col">
+        <div><label>Lead Source</label><select id="c_source"><option>Website</option><option>Landing Page</option><option>Facebook/Instagram Ads</option><option>Google Ads</option><option>WhatsApp Enquiry</option><option>Phone Call</option><option>Walk-in</option><option>Referral</option><option>99acres</option><option>MagicBricks</option><option>Housing.com</option><option>Other</option></select></div>
+        <div><label>Campaign</label><input id="c_campaign" placeholder="optional"></div>
+      </div>
+      <label>Interested Property</label><input id="c_property" placeholder="e.g. 3BHK Flat, Zoo Road">
+      <div class="three-col">
+        <div><label>Property Type</label><select id="c_ptype"><option>Residential</option><option>Commercial</option><option>Plot/Land</option></select></div>
+        <div><label>Intent</label><select id="c_intent"><option>Buy</option><option>Rent</option><option>Invest</option></select></div>
+        <div><label>Configuration</label><input id="c_config" placeholder="3BHK"></div>
+      </div>
+      <div class="two-col"><div><label>Min Budget (₹)</label><input id="c_budgetmin" type="number"></div><div><label>Max Budget (₹)</label><input id="c_budgetmax" type="number"></div></div>
+      <div class="section-label">Status</div>
+      <div class="three-col">
+        <div><label>Stage</label><select id="c_stage"></select></div>
+        <div><label>Priority</label><select id="c_priority"><option>Medium</option><option>High</option><option>Low</option></select></div>
+        <div><label>Assigned Agent</label><select id="c_agent"></select></div>
+      </div>
+      <label>Next Follow-up</label><input type="date" id="c_followup">
+      <div class="section-label">Notes</div>
+      <label>Requirements / Notes</label><textarea id="c_notes" placeholder="Koi extra detail ya nayi note..."></textarea>
+    </div>
+    <div class="modal-foot"><button class="btn" onclick="closeModal('contactBackdrop')">Cancel</button><button class="btn primary" onclick="saveContact()">Save</button></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="propertyBackdrop">
+  <div class="modal">
+    <div class="modal-h"><h3 id="propertyModalTitle">New Property</h3><button onclick="closeModal('propertyBackdrop')">✕</button></div>
+    <div class="modal-body">
+      <div class="section-label">Images</div>
+      <div class="img-drop" onclick="document.getElementById('p_img_input').click()">📷 Click to upload property photos</div>
+      <input type="file" id="p_img_input" accept="image/*" multiple style="display:none;" onchange="handlePropertyImages(event)">
+      <div class="img-thumbs" id="propImgThumbs"></div>
+
+      <div class="section-label">Details</div>
+      <label>Title *</label><input id="p_title" placeholder="e.g. Sunrise Residency 3BHK">
+      <div class="three-col">
+        <div><label>Listing Type</label><select id="p_listing"><option>Sale</option><option>Rent</option><option>Lease</option></select></div>
+        <div><label>Category</label><select id="p_category"><option>Residential</option><option>Commercial</option><option>Plot/Land</option></select></div>
+        <div><label>Type</label><select id="p_type"><option>Apartment</option><option>Villa</option><option>Independent House</option><option>Office</option><option>Shop</option><option>Warehouse</option><option>Land</option><option>Other</option></select></div>
+      </div>
+      <div class="three-col">
+        <div><label>Price / Rent (₹)</label><input id="p_price" type="number"></div>
+        <div><label>Bedrooms</label><input id="p_beds" type="number"></div>
+        <div><label>Area (sq.ft)</label><input id="p_area" type="number"></div>
+      </div>
+      <div class="two-col"><div><label>City</label><input id="p_city"></div><div><label>Locality</label><input id="p_locality"></div></div>
+      <div class="two-col"><div><label>Status</label><select id="p_status"><option>Available</option><option>Under Offer</option><option>Sold</option><option>Rented</option></select></div>
+      <div><label>Assigned Agent</label><select id="p_agent"></select></div></div>
+      <label>Description</label><textarea id="p_desc"></textarea>
+    </div>
+    <div class="modal-foot"><button class="btn" onclick="closeModal('propertyBackdrop')">Cancel</button><button class="btn primary" onclick="saveProperty()">Save</button></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="dealBackdrop">
+  <div class="modal">
+    <div class="modal-h"><h3 id="dealModalTitle">New Deal</h3><button onclick="closeModal('dealBackdrop')">✕</button></div>
+    <div class="modal-body">
+      <label>Client *</label><select id="d_contact"></select>
+      <label>Property</label><select id="d_property"></select>
+      <div class="two-col"><div><label>Deal Value (₹)</label><input id="d_value" type="number"></div><div><label>Expected Closing</label><input type="date" id="d_closing"></div></div>
+      <div class="two-col"><div><label>Stage</label><select id="d_stage"></select></div><div><label>Probability (%)</label><input id="d_prob" type="number" min="0" max="100" value="50"></div></div>
+      <div class="two-col"><div><label>Agent</label><select id="d_agent"></select></div><div><label>Commission (%)</label><input id="d_commission" type="number" value="2"></div></div>
+      <label>Notes</label><textarea id="d_notes"></textarea>
+    </div>
+    <div class="modal-foot"><button class="btn" onclick="closeModal('dealBackdrop')">Cancel</button><button class="btn primary" onclick="saveDeal()">Save</button></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="visitBackdrop">
+  <div class="modal">
+    <div class="modal-h"><h3 id="visitModalTitle">Schedule Site Visit</h3><button onclick="closeModal('visitBackdrop')">✕</button></div>
+    <div class="modal-body">
+      <label>Client *</label><select id="v_contact"></select>
+      <label>Property</label><select id="v_property"></select>
+      <div class="two-col"><div><label>Date</label><input type="date" id="v_date"></div><div><label>Time</label><input type="time" id="v_time"></div></div>
+      <div class="two-col"><div><label>Agent</label><select id="v_agent"></select></div><div><label>Status</label><select id="v_status"><option>Scheduled</option><option>Confirmed</option><option>Completed</option><option>Rescheduled</option><option>Cancelled</option><option>No-show</option></select></div></div>
+      <label>Notes / Instructions</label><textarea id="v_notes"></textarea>
+    </div>
+    <div class="modal-foot"><button class="btn" onclick="closeModal('visitBackdrop')">Cancel</button><button class="btn primary" onclick="saveVisit()">Save</button></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="taskBackdrop">
+  <div class="modal">
+    <div class="modal-h"><h3 id="taskModalTitle">New Task</h3><button onclick="closeModal('taskBackdrop')">✕</button></div>
+    <div class="modal-body">
+      <label>Title *</label><input id="t_title" placeholder="e.g. Follow-up call">
+      <label>Related Client</label><select id="t_contact"></select>
+      <div class="two-col"><div><label>Type</label><select id="t_type"><option>Call</option><option>Meeting</option><option>Follow-up</option><option>Site Visit Prep</option><option>Document</option><option>Other</option></select></div>
+      <div><label>Priority</label><select id="t_priority"><option>Medium</option><option>High</option><option>Low</option></select></div></div>
+      <div class="two-col"><div><label>Due Date</label><input type="date" id="t_due"></div><div><label>Due Time</label><input type="time" id="t_time"></div></div>
+      <div class="two-col"><div><label>Agent</label><select id="t_agent"></select></div><div><label>Status</label><select id="t_status"><option>Pending</option><option>Completed</option></select></div></div>
+      <label>Notes</label><textarea id="t_notes"></textarea>
+    </div>
+    <div class="modal-foot"><button class="btn" onclick="closeModal('taskBackdrop')">Cancel</button><button class="btn primary" onclick="saveTask()">Save</button></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="activityBackdrop">
+  <div class="modal">
+    <div class="modal-h"><h3>Log Activity</h3><button onclick="closeModal('activityBackdrop')">✕</button></div>
+    <div class="modal-body">
+      <label>Contact *</label><select id="a_contact"></select>
+      <div class="two-col"><div><label>Type</label><select id="a_type"><option>Call</option><option>Email</option><option>WhatsApp</option><option>Meeting</option><option>Note</option><option>Status Change</option></select></div>
+      <div><label>Outcome</label><select id="a_outcome"><option>Connected</option><option>No Answer</option><option>Follow-up Scheduled</option><option>Interested</option><option>Not Interested</option><option>Other</option></select></div></div>
+      <label>Agent</label><select id="a_agent"></select>
+      <label>Notes</label><textarea id="a_notes"></textarea>
+    </div>
+    <div class="modal-foot"><button class="btn" onclick="closeModal('activityBackdrop')">Cancel</button><button class="btn primary" onclick="saveActivity()">Save</button></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="agentBackdrop">
+  <div class="modal">
+    <div class="modal-h"><h3 id="agentModalTitle">New Agent</h3><button onclick="closeModal('agentBackdrop')">✕</button></div>
+    <div class="modal-body">
+      <label>Name *</label><input id="ag_name">
+      <div class="two-col"><div><label>Phone</label><input id="ag_phone"></div><div><label>Email</label><input id="ag_email"></div></div>
+      <label>Role</label><select id="ag_role"><option>Agent</option><option>Senior Agent</option><option>Manager</option><option>Admin</option></select>
+    </div>
+    <div class="modal-foot"><button class="btn" onclick="closeModal('agentBackdrop')">Cancel</button><button class="btn primary" onclick="saveAgent()">Save</button></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="documentBackdrop">
+  <div class="modal">
+    <div class="modal-h"><h3>Upload Document</h3><button onclick="closeModal('documentBackdrop')">✕</button></div>
+    <div class="modal-body">
+      <label>Category</label><select id="doc_category"><option>Property Brochure</option><option>Property Photographs</option><option>Floor Plan</option><option>Ownership Document</option><option>Agreement</option><option>ID Verification</option><option>Payment Document</option><option>Other</option></select>
+      <label>Related Client</label><select id="doc_contact"></select>
+      <label>Related Property</label><select id="doc_property"></select>
+      <label>File</label><input type="file" id="doc_file">
+      <p style="color:var(--muted);font-size:.76rem;">Images/PDF ka preview save hota hai; bade files sirf naam se record hote hain.</p>
+    </div>
+    <div class="modal-foot"><button class="btn" onclick="closeModal('documentBackdrop')">Cancel</button><button class="btn primary" onclick="saveDocument()">Save</button></div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+/* ===== Config ===== */
+const LEAD_STAGES = ['New','Contacted','Qualified','Site Visit','Negotiation','Won','Lost'];
+const DEAL_STAGES = ['New Opportunity','Qualified','Site Visit','Offer','Negotiation','Won','Lost'];
+const STAGE_COLOR = {
+  'New':['--blue-soft','--blue'],'Contacted':['--amber-soft','--amber'],'Qualified':['--purple-soft','--purple'],
+  'Site Visit':['--purple-soft','--purple'],'Negotiation':['--amber-soft','--amber'],'Won':['--forest-soft','--forest'],
+  'Closed Won':['--forest-soft','--forest'],'Lost':['--gray-soft','--gray'],'Closed Lost':['--gray-soft','--gray'],
+  'New Opportunity':['--blue-soft','--blue'],'Offer':['--amber-soft','--amber'],
+  'Scheduled':['--blue-soft','--blue'],'Confirmed':['--purple-soft','--purple'],'Completed':['--forest-soft','--forest'],
+  'Rescheduled':['--amber-soft','--amber'],'Cancelled':['--gray-soft','--gray'],'No-show':['--red-soft','--red'],
+  'Available':['--forest-soft','--forest'],'Under Offer':['--amber-soft','--amber'],'Sold':['--gray-soft','--gray'],'Rented':['--blue-soft','--blue']
+};
+function badge(stage){
+  const c = STAGE_COLOR[stage] || ['--gray-soft','--gray'];
+  return `<span class="badge" style="background:var(${c[0]});color:var(${c[1]})">${stage}</span>`;
+}
+const NAV = [
+  {group:'Workspace', items:[
+    {id:'overview', label:'Overview', ic:'📊'},
+    {id:'leads', label:'Leads', ic:'🧲'},
+    {id:'clients', label:'Clients', ic:'👥'},
+    {id:'properties', label:'Properties', ic:'🏢'},
+    {id:'deals', label:'Deals & Pipeline', ic:'💼'},
+    {id:'visits', label:'Site Visits', ic:'📍'},
+  ]},
+  {group:'Operations', items:[
+    {id:'tasks', label:'Tasks & Follow-ups', ic:'✅'},
+    {id:'comms', label:'Communications', ic:'💬'},
+    {id:'marketing', label:'Marketing & Sources', ic:'📣'},
+    {id:'agents', label:'Agents & Teams', ic:'🧑‍💼'},
+    {id:'reports', label:'Reports & Analytics', ic:'📈'},
+    {id:'documents', label:'Documents', ic:'📁'},
+    {id:'settings', label:'Settings', ic:'⚙️'},
+  ]}
+];
+
+/* ===== Data ===== */
+let DB = {contacts:[], properties:[], deals:[], visits:[], agents:[], tasks:[], activities:[], documents:[], settings:{companyName:'Estateflow Realty', tagline:'Trusted property partners in Guwahati'}};
+let taskFilter = 'all';
+let leadsViewMode='table', propViewMode='grid', dealsViewMode='kanban';
+let editingContactId=null, editingPropertyId=null, editingDealId=null, editingVisitId=null;
+let pendingContactPhoto=null, pendingPropertyImages=[];
+
+function uid(p){ return p + Date.now() + Math.floor(Math.random()*1000); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function money(n){ if(n==null||n==='') return '—'; n=Number(n); if(n>=10000000) return '₹'+(n/10000000).toFixed(2)+' Cr'; if(n>=100000) return '₹'+(n/100000).toFixed(1)+' L'; return '₹'+n.toLocaleString('en-IN'); }
+function initials(name){ return (name||'?').split(' ').map(w=>w[0]).filter(Boolean).slice(0,2).join('').toUpperCase(); }
+function avatarHtml(name,photo,size){ size=size||30; return photo?`<img class="avatar" style="width:${size}px;height:${size}px" src="${photo}">`:`<div class="avatar-fallback" style="width:${size}px;height:${size}px">${initials(name)}</div>`; }
+function toast(msg){ const w=document.getElementById('toastWrap'); const t=document.createElement('div'); t.className='toast'; t.textContent=msg; w.appendChild(t); setTimeout(()=>t.remove(),2800); }
+function agentName(id){ const a=DB.agents.find(x=>x.id===id); return a?a.name:'—'; }
+function contactName(id){ const c=DB.contacts.find(x=>x.id===id); return c?c.name:'—'; }
+function propertyTitle(id){ const p=DB.properties.find(x=>x.id===id); return p?p.title:'—'; }
+
+/* ===== Nav & routing ===== */
+function buildNav(){
+  const el = document.getElementById('navList');
+  el.innerHTML = NAV.map(g => `
+    <div class="navgroup-title">${g.group}</div>
+    ${g.items.map(it => `<a class="${it.soon?'soon':''}" data-view="${it.id}" onclick="goView('${it.id}', ${!!it.soon}, '${it.label}')"><span class="ic">${it.ic}</span><span class="label">${it.label}</span>${it.soon?'<span class="soon">soon</span>':''}</a>`).join('')}
+  `).join('');
+}
+function goView(id, soon, label){
+  document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('active', a.dataset.view===id));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  if(soon){
+    document.getElementById('soonTitle').textContent = label + ' — Coming in the Next Build';
+    document.getElementById('view-soon').classList.add('active');
+  } else {
+    document.getElementById('view-'+id).classList.add('active');
+  }
+  document.getElementById('sidebar').classList.remove('open');
+  renderCurrentView();
+}
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('collapsed'); }
+function toggleCreateMenu(){ document.getElementById('createMenu').classList.toggle('open'); }
+function closeCreateMenu(){ document.getElementById('createMenu').classList.remove('open'); }
+document.addEventListener('click', e=>{ if(!e.target.closest('.create-btn') && !e.target.closest('.create-menu')) closeCreateMenu(); });
+
+function renderCurrentView(){
+  const active = document.querySelector('.view.active');
+  if(!active) return;
+  const id = active.id;
+  if(id==='view-overview') renderOverview();
+  else if(id==='view-leads') renderLeads();
+  else if(id==='view-clients') renderClients();
+  else if(id==='view-properties') renderProperties();
+  else if(id==='view-deals') renderDeals();
+  else if(id==='view-visits') renderVisits();
+  else if(id==='view-tasks') renderTasks();
+  else if(id==='view-comms') renderComms();
+  else if(id==='view-marketing') renderMarketing();
+  else if(id==='view-agents') renderAgents();
+  else if(id==='view-reports') renderReports();
+  else if(id==='view-documents') renderDocuments();
+  else if(id==='view-settings') renderSettings();
+}
+function searchQ(){ return (document.getElementById('globalSearch').value||'').toLowerCase(); }
+
+/* ===== Overview ===== */
+function renderOverview(){
+  document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const today = new Date().toISOString().slice(0,10);
+  const activeDeals = DB.deals.filter(d=>!['Won','Lost'].includes(d.stage));
+  const closedDeals = DB.deals.filter(d=>d.stage==='Won');
+  const totalSales = closedDeals.reduce((s,d)=>s+Number(d.value||0),0);
+  const kpis = [
+    ['Total Leads', DB.contacts.length],
+    ['New Today', DB.contacts.filter(c=>(c.created||'').slice(0,10)===today).length],
+    ['Qualified Leads', DB.contacts.filter(c=>c.stage==='Qualified').length],
+    ['Follow-ups Due', DB.contacts.filter(c=>c.nextFollowup && c.nextFollowup<=today).length],
+    ['Site Visits Scheduled', DB.visits.filter(v=>v.status==='Scheduled'||v.status==='Confirmed').length],
+    ['Active Deals', activeDeals.length],
+    ['Closed Deals', closedDeals.length],
+    ['Total Sales Value', money(totalSales)],
+  ];
+  document.getElementById('kpiStrip').innerHTML = kpis.map(k=>`<div class="kpi"><b>${k[1]}</b><span>${k[0]}</span></div>`).join('');
+
+  const q = searchQ();
+  const recent = DB.contacts.filter(c=>c.name.toLowerCase().includes(q)).slice().sort((a,b)=>b.id>a.id?1:-1).slice(0,6);
+  document.getElementById('leadsCountMeta').textContent = DB.contacts.length + ' total';
+  document.getElementById('tblRecentLeads').innerHTML = recent.length ? recent.map(leadRow).join('') : emptyRow(10);
+
+  const todayFU = DB.contacts.filter(c=>c.nextFollowup===today);
+  document.getElementById('tblFollowups').innerHTML = todayFU.length ? todayFU.map(c=>`
+    <tr><td>${esc(c.name)}</td><td>${esc(c.phone||'—')}</td><td>Follow-up call</td><td>${badge(c.priority||'Medium')}</td><td>${esc(agentName(c.agent))}</td></tr>
+  `).join('') : emptyRow(5);
+
+  const upcomingVisits = DB.visits.filter(v=>v.status==='Scheduled'||v.status==='Confirmed').slice(0,5);
+  document.getElementById('tblVisitsOverview').innerHTML = upcomingVisits.length ? upcomingVisits.map(v=>`
+    <tr><td>${esc(contactName(v.contactId))}</td><td>${esc(propertyTitle(v.propertyId))}</td><td>${esc(v.date||'—')}</td><td>${esc(v.time||'—')}</td><td>${badge(v.status)}</td></tr>
+  `).join('') : emptyRow(5);
+
+  const sources = {};
+  DB.contacts.forEach(c=>{ sources[c.source]=(sources[c.source]||0)+1; });
+  const maxS = Math.max(1,...Object.values(sources));
+  const entries = Object.entries(sources).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  document.getElementById('sourceBars').innerHTML = entries.length ? entries.map(([s,c])=>`
+    <div class="source-row"><span class="slabel">${esc(s)}</span><div class="sbar-wrap"><div class="sbar" style="width:${(c/maxS*100)}%"></div></div><span class="scount">${c}</span></div>
+  `).join('') : '<p style="color:var(--muted);font-size:.82rem;">Abhi data nahi hai.</p>';
+
+  const feed = [];
+  DB.contacts.slice().sort((a,b)=>b.id>a.id?1:-1).slice(0,3).forEach(c=>feed.push({ic:'🧲',text:`<b>${esc(c.name)}</b> naya lead add hua (${esc(c.source)})`,time:c.created}));
+  DB.deals.slice().sort((a,b)=>b.id>a.id?1:-1).slice(0,2).forEach(d=>feed.push({ic:'💼',text:`Deal stage <b>${esc(d.stage)}</b> — ${esc(contactName(d.contactId))}`,time:''}));
+  DB.visits.slice().sort((a,b)=>b.id>a.id?1:-1).slice(0,2).forEach(v=>feed.push({ic:'📍',text:`Site visit scheduled — <b>${esc(contactName(v.contactId))}</b>`,time:v.date}));
+  document.getElementById('activityFeed').innerHTML = feed.length ? feed.map(f=>`
+    <div class="feed-item"><div class="feed-ic">${f.ic}</div><div class="feed-text">${f.text}<div class="feed-time">${esc(f.time||'')}</div></div></div>
+  `).join('') : '<p style="color:var(--muted);font-size:.82rem;padding:14px 0;">Koi activity nahi hai.</p>';
+}
+function emptyRow(colspan){ return `<tr class="empty-row"><td colspan="${colspan}">Koi record nahi mila.</td></tr>`; }
+
+function leadRow(c){
+  const overdue = c.nextFollowup && c.nextFollowup < new Date().toISOString().slice(0,10);
+  return `<tr class="rowclick" onclick="openContactModal('${c.id}')">
+    <td onclick="event.stopPropagation()"><input type="checkbox" class="checkbox"></td>
+    <td class="cell-name">${avatarHtml(c.name,c.photo)}<span class="name-sub">${esc(c.name)}<small>${esc(c.city||'')}</small></span></td>
+    <td>${esc(c.phone||'—')}</td>
+    <td>${esc(c.property||'—')}</td>
+    <td>${money(c.budgetMax)}</td>
+    <td>${esc(c.source||'—')}</td>
+    <td>${esc(agentName(c.agent))}</td>
+    <td>${badge(c.stage)}</td>
+    <td style="${overdue?'color:var(--red);font-weight:700;':''}">${esc(c.nextFollowup||'—')}</td>
+    <td onclick="event.stopPropagation()"><div class="row-actions">
+      <a href="tel:${encodeURIComponent(c.phone||'')}" class="btn sm" title="Call" onclick="logQuickActivity('${c.id}','Call')">📞</a>
+      <a href="https://wa.me/${encodeURIComponent((c.whatsapp||c.phone||'').replace(/\\D/g,''))}" target="_blank" class="btn sm" title="WhatsApp" onclick="logQuickActivity('${c.id}','WhatsApp')">💬</a>
+      <button class="btn sm" onclick="deleteContact('${c.id}')" title="Delete">🗑</button>
+    </div></td>
+  </tr>`;
+}
+
+/* ===== Leads ===== */
+function setLeadsView(mode, btn){
+  leadsViewMode = mode;
+  document.querySelectorAll('#view-leads .toggle-group button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('leadsTableWrap').style.display = mode==='table' ? 'block' : 'none';
+  document.getElementById('leadsKanbanWrap').style.display = mode==='kanban' ? 'block' : 'none';
+  renderLeads();
+}
+function toggleAllLeads(cb){ document.querySelectorAll('#tblAllLeads .checkbox').forEach(c=>c.checked=cb.checked); }
+function renderLeads(){
+  const q = searchQ();
+  const list = DB.contacts.filter(c=>c.name.toLowerCase().includes(q)||(c.property||'').toLowerCase().includes(q));
+  document.getElementById('leadsAllMeta').textContent = list.length + ' leads';
+  if(leadsViewMode==='table'){
+    document.getElementById('tblAllLeads').innerHTML = list.length ? list.map(leadRow).join('') : emptyRow(10);
+  } else {
+    document.getElementById('leadsPipeline').innerHTML = LEAD_STAGES.map(stage=>{
+      const items = list.filter(c=>c.stage===stage);
+      const cards = items.map(c=>`
+        <div class="pcard" draggable="true" data-id="${c.id}" ondragstart="dragStart(event,'contacts')" onclick="openContactModal('${c.id}')">
+          <div class="pname">${esc(c.name)}</div><div class="pmeta">${esc(c.property||'—')} · ${money(c.budgetMax)}</div>
+          <span class="ptag">${esc(c.source||'')}</span>
+        </div>`).join('');
+      return `<div class="pcol" data-stage="${stage}" data-kind="contacts" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event)">
+        <div class="pcol-head"><span>${stage}</span><span class="count">${items.length}</span></div>${cards}</div>`;
+    }).join('');
+  }
+}
+
+/* ===== Clients ===== */
+function renderClients(){
+  const q = searchQ();
+  const list = DB.contacts.filter(c=>c.name.toLowerCase().includes(q));
+  document.getElementById('clientsMeta').textContent = list.length + ' clients';
+  document.getElementById('tblClients').innerHTML = list.length ? list.map(c=>`
+    <tr class="rowclick" onclick="openContactModal('${c.id}')">
+      <td class="cell-name">${avatarHtml(c.name,c.photo)}<span class="name-sub">${esc(c.name)}<small>${esc(c.occupation||c.city||'')}</small></span></td>
+      <td>${esc(c.phone||'—')}</td><td>${esc(c.email||'—')}</td><td>${esc(c.property||'—')}</td><td>${money(c.budgetMax)}</td>
+      <td>${esc(agentName(c.agent))}</td><td>${esc(c.nextFollowup||'—')}</td><td>${badge(c.stage)}</td>
+      <td onclick="event.stopPropagation()"><div class="row-actions">
+        <a href="tel:${encodeURIComponent(c.phone||'')}" class="btn sm">📞</a>
+        <button class="btn sm" onclick="deleteContact('${c.id}')">🗑</button>
+      </div></td>
+    </tr>`).join('') : emptyRow(9);
+}
+
+/* ===== Properties ===== */
+function setPropView(mode, btn){
+  propViewMode = mode;
+  document.querySelectorAll('#view-properties .toggle-group button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('propGridWrap').style.display = mode==='grid' ? 'grid' : 'none';
+  document.getElementById('propTableWrap').style.display = mode==='table' ? 'block' : 'none';
+  renderProperties();
+}
+function renderProperties(){
+  const q = searchQ();
+  const list = DB.properties.filter(p=>p.title.toLowerCase().includes(q)||(p.locality||'').toLowerCase().includes(q));
+  if(propViewMode==='grid'){
+    document.getElementById('propGridWrap').innerHTML = list.length ? list.map(p=>`
+      <div class="prop-card">
+        <div class="prop-img">${p.images&&p.images[0]?`<img src="${p.images[0]}">`:'🏠'}</div>
+        <div class="prop-body">
+          <h4>${esc(p.title)}</h4><div class="ploc">${esc(p.locality||'')}, ${esc(p.city||'')}</div>
+          <div class="prop-price">${money(p.price)}${p.listing==='Rent'?'/mo':''}</div>
+          <div class="prop-specs"><span>${esc(p.type||'')}</span>${p.beds?`<span>🛏 ${p.beds}</span>`:''}${p.area?`<span>📐 ${p.area} sqft</span>`:''}</div>
+          <div style="margin-top:8px;">${badge(p.status)}</div>
+          <div class="prop-actions"><button class="btn sm" onclick="openPropertyModal('${p.id}')">Edit</button><button class="btn sm danger" onclick="deleteProperty('${p.id}')">Delete</button></div>
+        </div>
+      </div>`).join('') : '<p style="color:var(--muted);">Koi property nahi mili.</p>';
+  } else {
+    document.getElementById('tblProperties').innerHTML = list.length ? list.map(p=>`
+      <tr><td class="cell-name">${p.images&&p.images[0]?`<img class="avatar" src="${p.images[0]}">`:'<div class="avatar-fallback">🏠</div>'}<span class="name-sub">${esc(p.title)}</span></td>
+      <td>${esc(p.type||'—')}</td><td>${money(p.price)}</td><td>${esc(p.locality||'')}, ${esc(p.city||'')}</td><td>${badge(p.status)}</td><td>${esc(agentName(p.agent))}</td>
+      <td><div class="row-actions"><button class="btn sm" onclick="openPropertyModal('${p.id}')">✏️</button><button class="btn sm" onclick="deleteProperty('${p.id}')">🗑</button></div></td></tr>
+    `).join('') : emptyRow(7);
+  }
+}
+
+/* ===== Deals ===== */
+function setDealsView(mode, btn){
+  dealsViewMode = mode;
+  document.querySelectorAll('#view-deals .toggle-group button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('dealsKanbanWrap').style.display = mode==='kanban' ? 'block' : 'none';
+  document.getElementById('dealsTableWrap').style.display = mode==='table' ? 'block' : 'none';
+  renderDeals();
+}
+function renderDeals(){
+  const pipelineValue = DB.deals.filter(d=>!['Won','Lost'].includes(d.stage)).reduce((s,d)=>s+Number(d.value||0),0);
+  const weighted = DB.deals.filter(d=>!['Won','Lost'].includes(d.stage)).reduce((s,d)=>s+Number(d.value||0)*(Number(d.probability||0)/100),0);
+  const won = DB.deals.filter(d=>d.stage==='Won');
+  const lost = DB.deals.filter(d=>d.stage==='Lost');
+  const convRate = DB.deals.length ? Math.round(won.length/DB.deals.length*100) : 0;
+  document.getElementById('dealsKpi').innerHTML = [
+    ['Pipeline Value', money(pipelineValue)],['Weighted Value', money(weighted)],
+    ['Won Deals', won.length],['Lost Deals', lost.length],
+    ['Conversion Rate', convRate+'%'],['Total Revenue (Won)', money(won.reduce((s,d)=>s+Number(d.value||0),0))]
+  ].map(k=>`<div class="kpi"><b>${k[1]}</b><span>${k[0]}</span></div>`).join('');
+
+  const q = searchQ();
+  const list = DB.deals.filter(d=>contactName(d.contactId).toLowerCase().includes(q));
+  if(dealsViewMode==='kanban'){
+    document.getElementById('dealsPipeline').innerHTML = DEAL_STAGES.map(stage=>{
+      const items = list.filter(d=>d.stage===stage);
+      const cards = items.map(d=>`
+        <div class="pcard" draggable="true" data-id="${d.id}" ondragstart="dragStart(event,'deals')" onclick="openDealModal('${d.id}')">
+          <div class="pname">${esc(contactName(d.contactId))}</div><div class="pmeta">${esc(propertyTitle(d.propertyId))} · ${money(d.value)}</div>
+          <span class="ptag">${d.probability||0}% probability</span>
+        </div>`).join('');
+      return `<div class="pcol" data-stage="${stage}" data-kind="deals" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event)">
+        <div class="pcol-head"><span>${stage}</span><span class="count">${items.length}</span></div>${cards}</div>`;
+    }).join('');
+  } else {
+    document.getElementById('tblDeals').innerHTML = list.length ? list.map(d=>`
+      <tr><td>${esc(d.id)}</td><td>${esc(contactName(d.contactId))}</td><td>${esc(propertyTitle(d.propertyId))}</td><td>${money(d.value)}</td>
+      <td>${badge(d.stage)}</td><td>${d.probability||0}%</td><td>${esc(d.closing||'—')}</td><td>${esc(agentName(d.agent))}</td>
+      <td><div class="row-actions"><button class="btn sm" onclick="openDealModal('${d.id}')">✏️</button><button class="btn sm" onclick="deleteDeal('${d.id}')">🗑</button></div></td></tr>
+    `).join('') : emptyRow(9);
+  }
+}
+
+/* ===== Visits ===== */
+function renderVisits(){
+  const q = searchQ();
+  const list = DB.visits.filter(v=>contactName(v.contactId).toLowerCase().includes(q));
+  document.getElementById('tblVisits').innerHTML = list.length ? list.map(v=>`
+    <tr><td>${esc(contactName(v.contactId))}</td><td>${esc(propertyTitle(v.propertyId))}</td><td>${esc(v.date||'—')}</td><td>${esc(v.time||'—')}</td>
+    <td>${esc(agentName(v.agent))}</td><td>${badge(v.status)}</td>
+    <td><div class="row-actions"><button class="btn sm" onclick="openVisitModal('${v.id}')">✏️</button><button class="btn sm" onclick="deleteVisit('${v.id}')">🗑</button></div></td></tr>
+  `).join('') : emptyRow(7);
+}
+
+/* ===== Drag & drop (shared by leads + deals kanban) ===== */
+function dragStart(e,kind){ e.dataTransfer.setData('text/plain', JSON.stringify({id:e.target.closest('.pcard').dataset.id,kind})); }
+function dragOver(e){ e.preventDefault(); e.currentTarget.classList.add('dragover'); }
+function dragLeave(e){ e.currentTarget.classList.remove('dragover'); }
+async function drop(e){
+  e.preventDefault(); e.currentTarget.classList.remove('dragover');
+  const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+  const stage = e.currentTarget.dataset.stage;
+  if(data.kind==='contacts'){ const c=DB.contacts.find(x=>x.id===data.id); if(c){ c.stage=stage; } }
+  if(data.kind==='deals'){ const d=DB.deals.find(x=>x.id===data.id); if(d){ d.stage=stage; } }
+  await persist(); renderCurrentView();
+}
+
+/* ===== Contact modal ===== */
+function fillSelect(id, options, selected){ document.getElementById(id).innerHTML = options.map(o=>`<option ${o===selected?'selected':''}>${o}</option>`).join(''); }
+function fillAgentSelect(id, selected){ document.getElementById(id).innerHTML = DB.agents.map(a=>`<option value="${a.id}" ${a.id===selected?'selected':''}>${a.name}</option>`).join(''); }
+
+function openContactModal(id, defaultStage){
+  editingContactId = id || null; pendingContactPhoto = null;
+  const c = id ? DB.contacts.find(x=>x.id===id) : null;
+  document.getElementById('contactModalTitle').textContent = id ? 'Edit Lead / Client' : 'New Lead';
+  document.getElementById('c_name').value = c?c.name:'';
+  document.getElementById('c_phone').value = c?c.phone||'':'';
+  document.getElementById('c_whatsapp').value = c?c.whatsapp||'':'';
+  document.getElementById('c_email').value = c?c.email||'':'';
+  document.getElementById('c_city').value = c?c.city||'':'';
+  document.getElementById('c_address').value = c?c.address||'':'';
+  fillSelect('c_source', ['Website','Landing Page','Facebook/Instagram Ads','Google Ads','WhatsApp Enquiry','Phone Call','Walk-in','Referral','99acres','MagicBricks','Housing.com','Other'], c?c.source:'Referral');
+  document.getElementById('c_campaign').value = c?c.campaign||'':'';
+  document.getElementById('c_property').value = c?c.property||'':'';
+  fillSelect('c_ptype', ['Residential','Commercial','Plot/Land'], c?c.ptype:'Residential');
+  fillSelect('c_intent', ['Buy','Rent','Invest'], c?c.intent:'Buy');
+  document.getElementById('c_config').value = c?c.config||'':'';
+  document.getElementById('c_budgetmin').value = c?c.budgetMin||'':'';
+  document.getElementById('c_budgetmax').value = c?c.budgetMax||'':'';
+  fillSelect('c_stage', LEAD_STAGES, c?c.stage:(defaultStage||'New'));
+  fillSelect('c_priority', ['Medium','High','Low'], c?c.priority:'Medium');
+  fillAgentSelect('c_agent', c?c.agent:(DB.agents[0]&&DB.agents[0].id));
+  document.getElementById('c_followup').value = c?c.nextFollowup||'':'';
+  document.getElementById('c_notes').value = '';
+  const wrap = document.getElementById('contactPhotoWrap');
+  wrap.innerHTML = c&&c.photo ? `<img src="${c.photo}" style="width:56px;height:56px;border-radius:50%;object-fit:cover;">` : `<div class="avatar-fallback" style="width:56px;height:56px;">${initials(c?c.name:'?')}</div>`;
+  document.getElementById('c_photo_input').value = '';
+  document.getElementById('contactBackdrop').classList.add('open');
+}
+function handleContactPhoto(e){
+  const file = e.target.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = ()=>{ pendingContactPhoto = r.result; document.getElementById('contactPhotoWrap').innerHTML = `<img src="${pendingContactPhoto}" style="width:56px;height:56px;border-radius:50%;object-fit:cover;">`; };
+  r.readAsDataURL(file);
+}
+async function saveContact(){
+  const name = document.getElementById('c_name').value.trim();
+  if(!name){ alert('Naam zaroori hai'); return; }
+  const phone = document.getElementById('c_phone').value.trim();
+  const email = document.getElementById('c_email').value.trim();
+  if(!editingContactId){
+    const dup = DB.contacts.find(x=>(phone && x.phone===phone) || (email && x.email && email && x.email===email));
+    if(dup && !confirm(`"${dup.name}" jaisa phone/email wala record pehle se hai. Phir bhi naya record banayein?`)) return;
+  }
+  const notesText = document.getElementById('c_notes').value.trim();
+  const data = {
+    name, phone, whatsapp:document.getElementById('c_whatsapp').value.trim(), email,
+    city:document.getElementById('c_city').value.trim(), address:document.getElementById('c_address').value.trim(),
+    source:document.getElementById('c_source').value, campaign:document.getElementById('c_campaign').value.trim(),
+    property:document.getElementById('c_property').value.trim(), ptype:document.getElementById('c_ptype').value,
+    intent:document.getElementById('c_intent').value, config:document.getElementById('c_config').value.trim(),
+    budgetMin:document.getElementById('c_budgetmin').value, budgetMax:document.getElementById('c_budgetmax').value,
+    stage:document.getElementById('c_stage').value, priority:document.getElementById('c_priority').value,
+    agent:document.getElementById('c_agent').value, nextFollowup:document.getElementById('c_followup').value,
+  };
+  if(pendingContactPhoto) data.photo = pendingContactPhoto;
+  if(editingContactId){
+    const idx = DB.contacts.findIndex(x=>x.id===editingContactId);
+    DB.contacts[idx] = {...DB.contacts[idx], ...data};
+    if(notesText){ DB.contacts[idx].notes = DB.contacts[idx].notes||[]; DB.contacts[idx].notes.push({text:notesText,date:new Date().toLocaleDateString('en-IN')}); }
+  } else {
+    DB.contacts.push({id:uid('L'), created:new Date().toISOString(), score:50, notes: notesText?[{text:notesText,date:new Date().toLocaleDateString('en-IN')}]:[], ...data});
+  }
+  await persist(); closeModal('contactBackdrop'); renderCurrentView(); toast('Lead saved.');
+}
+async function deleteContact(id){ if(!confirm('Delete karna hai?')) return; DB.contacts = DB.contacts.filter(c=>c.id!==id); await persist(); renderCurrentView(); toast('Deleted.'); }
+
+/* ===== Property modal ===== */
+function openPropertyModal(id){
+  editingPropertyId = id || null; pendingPropertyImages = [];
+  const p = id ? DB.properties.find(x=>x.id===id) : null;
+  document.getElementById('propertyModalTitle').textContent = id ? 'Edit Property' : 'New Property';
+  document.getElementById('p_title').value = p?p.title:'';
+  fillSelect('p_listing', ['Sale','Rent','Lease'], p?p.listing:'Sale');
+  fillSelect('p_category', ['Residential','Commercial','Plot/Land'], p?p.category:'Residential');
+  fillSelect('p_type', ['Apartment','Villa','Independent House','Office','Shop','Warehouse','Land','Other'], p?p.type:'Apartment');
+  document.getElementById('p_price').value = p?p.price||'':'';
+  document.getElementById('p_beds').value = p?p.beds||'':'';
+  document.getElementById('p_area').value = p?p.area||'':'';
+  document.getElementById('p_city').value = p?p.city||'':'';
+  document.getElementById('p_locality').value = p?p.locality||'':'';
+  fillSelect('p_status', ['Available','Under Offer','Sold','Rented'], p?p.status:'Available');
+  fillAgentSelect('p_agent', p?p.agent:(DB.agents[0]&&DB.agents[0].id));
+  document.getElementById('p_desc').value = p?p.description||'':'';
+  pendingPropertyImages = p && p.images ? p.images.slice() : [];
+  renderPropThumbs();
+  document.getElementById('p_img_input').value = '';
+  document.getElementById('propertyBackdrop').classList.add('open');
+}
+function renderPropThumbs(){
+  document.getElementById('propImgThumbs').innerHTML = pendingPropertyImages.map((src,i)=>`
+    <div class="img-thumb ${i===0?'cover':''}"><img src="${src}"><button class="rm" onclick="removePropImg(${i})">✕</button></div>
+  `).join('');
+}
+function removePropImg(i){ pendingPropertyImages.splice(i,1); renderPropThumbs(); }
+function handlePropertyImages(e){
+  const files = Array.from(e.target.files);
+  files.forEach(file=>{
+    const r = new FileReader();
+    r.onload = ()=>{ pendingPropertyImages.push(r.result); renderPropThumbs(); };
+    r.readAsDataURL(file);
+  });
+}
+async function saveProperty(){
+  const title = document.getElementById('p_title').value.trim();
+  if(!title){ alert('Title zaroori hai'); return; }
+  const data = {
+    title, listing:document.getElementById('p_listing').value, category:document.getElementById('p_category').value,
+    type:document.getElementById('p_type').value, price:document.getElementById('p_price').value,
+    beds:document.getElementById('p_beds').value, area:document.getElementById('p_area').value,
+    city:document.getElementById('p_city').value.trim(), locality:document.getElementById('p_locality').value.trim(),
+    status:document.getElementById('p_status').value, agent:document.getElementById('p_agent').value,
+    description:document.getElementById('p_desc').value.trim(), images: pendingPropertyImages,
+  };
+  if(editingPropertyId){ const idx=DB.properties.findIndex(x=>x.id===editingPropertyId); DB.properties[idx]={...DB.properties[idx],...data}; }
+  else{ DB.properties.push({id:uid('P'), listingDate:new Date().toISOString(), ...data}); }
+  await persist(); closeModal('propertyBackdrop'); renderCurrentView(); toast('Property saved.');
+}
+async function deleteProperty(id){ if(!confirm('Delete karna hai?')) return; DB.properties = DB.properties.filter(p=>p.id!==id); await persist(); renderCurrentView(); toast('Deleted.'); }
+
+/* ===== Deal modal ===== */
+function fillContactSelect(id, selected){ document.getElementById(id).innerHTML = '<option value="">—</option>' + DB.contacts.map(c=>`<option value="${c.id}" ${c.id===selected?'selected':''}>${esc(c.name)}</option>`).join(''); }
+function fillPropertySelect(id, selected){ document.getElementById(id).innerHTML = '<option value="">—</option>' + DB.properties.map(p=>`<option value="${p.id}" ${p.id===selected?'selected':''}>${esc(p.title)}</option>`).join(''); }
+
+function openDealModal(id){
+  editingDealId = id || null;
+  const d = id ? DB.deals.find(x=>x.id===id) : null;
+  document.getElementById('dealModalTitle').textContent = id ? 'Edit Deal' : 'New Deal';
+  fillContactSelect('d_contact', d?d.contactId:'');
+  fillPropertySelect('d_property', d?d.propertyId:'');
+  document.getElementById('d_value').value = d?d.value||'':'';
+  document.getElementById('d_closing').value = d?d.closing||'':'';
+  fillSelect('d_stage', DEAL_STAGES, d?d.stage:'New Opportunity');
+  document.getElementById('d_prob').value = d?d.probability||50:50;
+  fillAgentSelect('d_agent', d?d.agent:(DB.agents[0]&&DB.agents[0].id));
+  document.getElementById('d_commission').value = d?d.commission||2:2;
+  document.getElementById('d_notes').value = d?d.notes||'':'';
+  document.getElementById('dealBackdrop').classList.add('open');
+}
+async function saveDeal(){
+  const contactId = document.getElementById('d_contact').value;
+  if(!contactId){ alert('Client select karein'); return; }
+  const data = {
+    contactId, propertyId:document.getElementById('d_property').value, value:document.getElementById('d_value').value,
+    closing:document.getElementById('d_closing').value, stage:document.getElementById('d_stage').value,
+    probability:document.getElementById('d_prob').value, agent:document.getElementById('d_agent').value,
+    commission:document.getElementById('d_commission').value, notes:document.getElementById('d_notes').value.trim(),
+  };
+  if(editingDealId){ const idx=DB.deals.findIndex(x=>x.id===editingDealId); DB.deals[idx]={...DB.deals[idx],...data}; }
+  else{ DB.deals.push({id:uid('D'), ...data}); }
+  await persist(); closeModal('dealBackdrop'); renderCurrentView(); toast('Deal saved.');
+}
+async function deleteDeal(id){ if(!confirm('Delete karna hai?')) return; DB.deals = DB.deals.filter(d=>d.id!==id); await persist(); renderCurrentView(); toast('Deleted.'); }
+
+/* ===== Visit modal ===== */
+function openVisitModal(id){
+  editingVisitId = id || null;
+  const v = id ? DB.visits.find(x=>x.id===id) : null;
+  document.getElementById('visitModalTitle').textContent = id ? 'Edit Site Visit' : 'Schedule Site Visit';
+  fillContactSelect('v_contact', v?v.contactId:'');
+  fillPropertySelect('v_property', v?v.propertyId:'');
+  document.getElementById('v_date').value = v?v.date||'':'';
+  document.getElementById('v_time').value = v?v.time||'':'';
+  fillAgentSelect('v_agent', v?v.agent:(DB.agents[0]&&DB.agents[0].id));
+  fillSelect('v_status', ['Scheduled','Confirmed','Completed','Rescheduled','Cancelled','No-show'], v?v.status:'Scheduled');
+  document.getElementById('v_notes').value = v?v.notes||'':'';
+  document.getElementById('visitBackdrop').classList.add('open');
+}
+async function saveVisit(){
+  const contactId = document.getElementById('v_contact').value;
+  if(!contactId){ alert('Client select karein'); return; }
+  const data = {
+    contactId, propertyId:document.getElementById('v_property').value, date:document.getElementById('v_date').value,
+    time:document.getElementById('v_time').value, agent:document.getElementById('v_agent').value,
+    status:document.getElementById('v_status').value, notes:document.getElementById('v_notes').value.trim(),
+  };
+  if(editingVisitId){ const idx=DB.visits.findIndex(x=>x.id===editingVisitId); DB.visits[idx]={...DB.visits[idx],...data}; }
+  else{ DB.visits.push({id:uid('V'), ...data}); }
+  await persist(); closeModal('visitBackdrop'); renderCurrentView(); toast('Site visit saved. (No real SMS/calendar invite sent — connect an integration for that.)');
+}
+async function deleteVisit(id){ if(!confirm('Delete karna hai?')) return; DB.visits = DB.visits.filter(v=>v.id!==id); await persist(); renderCurrentView(); toast('Deleted.'); }
+
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+/* ===== CSV export ===== */
+function exportCSV(kind){
+  let rows=[], headers=[];
+  if(kind==='clients'){ headers=['Name','Phone','Email','Property','Budget','Agent','Stage']; rows=DB.contacts.map(c=>[c.name,c.phone,c.email,c.property,c.budgetMax,agentName(c.agent),c.stage]); }
+  else{ headers=['Name','Phone','Property','Budget','Source','Agent','Stage','Next Follow-up']; rows=DB.contacts.map(c=>[c.name,c.phone,c.property,c.budgetMax,c.source,agentName(c.agent),c.stage,c.nextFollowup]); }
+  const csv = [headers.join(','), ...rows.map(r=>r.map(v=>`"${String(v==null?'':v).replace(/"/g,'""')}"`).join(','))].join('\\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = kind+'.csv'; a.click();
+  toast('CSV exported.');
+}
+
+/* ===== Tasks ===== */
+function renderTaskTabs(){
+  const today = new Date().toISOString().slice(0,10);
+  const tabs = [
+    ['all','All'],
+    ['overdue','Overdue ('+DB.tasks.filter(t=>t.due&&t.due<today&&t.status!=='Completed').length+')'],
+    ['today','Today ('+DB.tasks.filter(t=>t.due===today&&t.status!=='Completed').length+')'],
+    ['upcoming','Upcoming ('+DB.tasks.filter(t=>t.due>today&&t.status!=='Completed').length+')'],
+    ['completed','Completed ('+DB.tasks.filter(t=>t.status==='Completed').length+')'],
+  ];
+  document.getElementById('taskTabs').innerHTML = tabs.map(([k,l])=>`<button class="${taskFilter===k?'active':''}" onclick="taskFilter='${k}';renderTasks()">${l}</button>`).join('');
+}
+function renderTasks(){
+  renderTaskTabs();
+  const today = new Date().toISOString().slice(0,10);
+  let list = DB.tasks.slice();
+  if(taskFilter==='overdue') list = list.filter(t=>t.due&&t.due<today&&t.status!=='Completed');
+  else if(taskFilter==='today') list = list.filter(t=>t.due===today&&t.status!=='Completed');
+  else if(taskFilter==='upcoming') list = list.filter(t=>t.due>today&&t.status!=='Completed');
+  else if(taskFilter==='completed') list = list.filter(t=>t.status==='Completed');
+  list.sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999'));
+  document.getElementById('tblTasks').innerHTML = list.length ? list.map(t=>{
+    const overdue = t.due && t.due<today && t.status!=='Completed';
+    return `<tr><td>${esc(t.title)}</td><td>${esc(contactName(t.contactId))}</td><td>${esc(t.type)}</td>
+    <td style="${overdue?'color:var(--red);font-weight:700;':''}">${esc(t.due||'—')} ${esc(t.time||'')}</td>
+    <td>${badge(t.priority)}</td><td>${esc(agentName(t.agent))}</td><td>${t.status==='Completed'?badge('Won'):'<span class="badge" style="background:var(--amber-soft);color:var(--amber)">Pending</span>'}</td>
+    <td><div class="row-actions">
+      ${t.status!=='Completed'?`<button class="btn sm" onclick="completeTask('${t.id}')">✔</button>`:''}
+      <button class="btn sm" onclick="openTaskModal('${t.id}')">✏️</button>
+      <button class="btn sm" onclick="deleteTask('${t.id}')">🗑</button>
+    </div></td></tr>`;
+  }).join('') : emptyRow(8);
+}
+function openTaskModal(id){
+  const t = id ? DB.tasks.find(x=>x.id===id) : null;
+  document.getElementById('taskModalTitle').textContent = id?'Edit Task':'New Task';
+  document.getElementById('taskBackdrop').dataset.editId = id||'';
+  document.getElementById('t_title').value = t?t.title:'';
+  fillContactSelect('t_contact', t?t.contactId:'');
+  fillSelect('t_type', ['Call','Meeting','Follow-up','Site Visit Prep','Document','Other'], t?t.type:'Call');
+  fillSelect('t_priority', ['Medium','High','Low'], t?t.priority:'Medium');
+  document.getElementById('t_due').value = t?t.due||'':new Date().toISOString().slice(0,10);
+  document.getElementById('t_time').value = t?t.time||'':'';
+  fillAgentSelect('t_agent', t?t.agent:(DB.agents[0]&&DB.agents[0].id));
+  fillSelect('t_status', ['Pending','Completed'], t?t.status:'Pending');
+  document.getElementById('t_notes').value = t?t.notes||'':'';
+  document.getElementById('taskBackdrop').classList.add('open');
+}
+async function saveTask(){
+  const title = document.getElementById('t_title').value.trim();
+  if(!title){ alert('Title zaroori hai'); return; }
+  const id = document.getElementById('taskBackdrop').dataset.editId;
+  const data = {title, contactId:document.getElementById('t_contact').value, type:document.getElementById('t_type').value,
+    priority:document.getElementById('t_priority').value, due:document.getElementById('t_due').value, time:document.getElementById('t_time').value,
+    agent:document.getElementById('t_agent').value, status:document.getElementById('t_status').value, notes:document.getElementById('t_notes').value.trim()};
+  if(id){ const idx=DB.tasks.findIndex(x=>x.id===id); DB.tasks[idx]={...DB.tasks[idx],...data}; }
+  else{ DB.tasks.push({id:uid('T'), ...data}); }
+  await persist(); closeModal('taskBackdrop'); renderTasks(); toast('Task saved.');
+}
+async function completeTask(id){ const t=DB.tasks.find(x=>x.id===id); if(t){ t.status='Completed'; await persist(); renderTasks(); toast('Marked complete.'); } }
+async function deleteTask(id){ if(!confirm('Delete karna hai?')) return; DB.tasks=DB.tasks.filter(t=>t.id!==id); await persist(); renderTasks(); toast('Deleted.'); }
+
+/* ===== Communications ===== */
+function logQuickActivity(contactId, type){
+  DB.activities.push({id:uid('AC'), contactId, type, outcome:'', agent:(DB.agents[0]&&DB.agents[0].id)||'', notes:'Quick action from Leads table', date:new Date().toISOString()});
+  persist();
+}
+function renderComms(){
+  const list = DB.activities.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  document.getElementById('tblComms').innerHTML = list.length ? list.map(a=>`
+    <tr><td>${esc((a.date||'').slice(0,10))}</td><td>${esc(a.type)}</td><td>${esc(contactName(a.contactId))}</td><td>${esc(agentName(a.agent))}</td>
+    <td>${a.outcome?badge(a.outcome):'—'}</td><td>${esc(a.notes||'—')}</td>
+    <td><button class="btn sm" onclick="deleteActivity('${a.id}')">🗑</button></td></tr>
+  `).join('') : emptyRow(7);
+}
+function openActivityModal(){
+  fillContactSelect('a_contact','');
+  fillAgentSelect('a_agent', DB.agents[0]&&DB.agents[0].id);
+  document.getElementById('a_notes').value='';
+  document.getElementById('activityBackdrop').classList.add('open');
+}
+async function saveActivity(){
+  const contactId = document.getElementById('a_contact').value;
+  if(!contactId){ alert('Contact select karein'); return; }
+  DB.activities.push({id:uid('AC'), contactId, type:document.getElementById('a_type').value, outcome:document.getElementById('a_outcome').value,
+    agent:document.getElementById('a_agent').value, notes:document.getElementById('a_notes').value.trim(), date:new Date().toISOString()});
+  await persist(); closeModal('activityBackdrop'); renderComms(); toast('Activity logged.');
+}
+async function deleteActivity(id){ DB.activities=DB.activities.filter(a=>a.id!==id); await persist(); renderComms(); }
+
+/* ===== Marketing ===== */
+function renderMarketing(){
+  const sources = {};
+  DB.contacts.forEach(c=>{ sources[c.source]=sources[c.source]||{leads:0,qualified:0}; sources[c.source].leads++; if(!['New','Contacted'].includes(c.stage)) sources[c.source].qualified++; });
+  const wonBySource = {};
+  DB.deals.filter(d=>d.stage==='Won').forEach(d=>{ const c=DB.contacts.find(x=>x.id===d.contactId); if(c){ wonBySource[c.source]=(wonBySource[c.source]||0)+1; } });
+  const rows = Object.entries(sources).sort((a,b)=>b[1].leads-a[1].leads);
+  document.getElementById('tblMarketing').innerHTML = rows.length ? rows.map(([s,d])=>{
+    const won = wonBySource[s]||0;
+    const conv = d.leads ? Math.round(won/d.leads*100) : 0;
+    return `<tr><td>${esc(s)}</td><td>${d.leads}</td><td>${d.qualified}</td><td>${won}</td><td>${conv}%</td></tr>`;
+  }).join('') : emptyRow(5);
+}
+async function submitTestEnquiry(){
+  const name = document.getElementById('m_name').value.trim();
+  if(!name){ alert('Naam daalein'); return; }
+  DB.contacts.push({id:uid('L'), name, phone:document.getElementById('m_phone').value.trim(), whatsapp:'', email:'', city:'', address:'',
+    source:'Website', campaign:'Demo Landing Page', property:document.getElementById('m_property').value.trim(), ptype:'Residential', intent:'Buy', config:'',
+    budgetMin:'', budgetMax:'', stage:'New', priority:'Medium', agent:(DB.agents[0]&&DB.agents[0].id)||'', nextFollowup:'', created:new Date().toISOString(), score:30, notes:[]});
+  await persist();
+  document.getElementById('m_name').value=''; document.getElementById('m_phone').value=''; document.getElementById('m_property').value='';
+  renderMarketing(); toast('Test lead saved to Leads module.');
+}
+
+/* ===== Agents ===== */
+function renderAgents(){
+  document.getElementById('tblAgents').innerHTML = DB.agents.length ? DB.agents.map(a=>{
+    const leads = DB.contacts.filter(c=>c.agent===a.id).length;
+    const activeDeals = DB.deals.filter(d=>d.agent===a.id && !['Won','Lost'].includes(d.stage)).length;
+    const visits = DB.visits.filter(v=>v.agent===a.id).length;
+    const fuDue = DB.contacts.filter(c=>c.agent===a.id && c.nextFollowup && c.nextFollowup<=new Date().toISOString().slice(0,10)).length;
+    const won = DB.deals.filter(d=>d.agent===a.id && d.stage==='Won').length;
+    return `<tr><td class="cell-name">${avatarHtml(a.name)}<span class="name-sub">${esc(a.name)}</span></td><td>${esc(a.role||'Agent')}</td><td>${esc(a.phone||'—')}</td>
+    <td>${leads}</td><td>${activeDeals}</td><td>${visits}</td><td>${fuDue}</td><td>${won}</td>
+    <td><div class="row-actions"><button class="btn sm" onclick="openAgentModal('${a.id}')">✏️</button><button class="btn sm" onclick="deleteAgent('${a.id}')">🗑</button></div></td></tr>`;
+  }).join('') : emptyRow(9);
+}
+function openAgentModal(id){
+  const a = id ? DB.agents.find(x=>x.id===id) : null;
+  document.getElementById('agentModalTitle').textContent = id?'Edit Agent':'New Agent';
+  document.getElementById('agentBackdrop').dataset.editId = id||'';
+  document.getElementById('ag_name').value = a?a.name:'';
+  document.getElementById('ag_phone').value = a?a.phone||'':'';
+  document.getElementById('ag_email').value = a?a.email||'':'';
+  fillSelect('ag_role', ['Agent','Senior Agent','Manager','Admin'], a?a.role:'Agent');
+  document.getElementById('agentBackdrop').classList.add('open');
+}
+async function saveAgent(){
+  const name = document.getElementById('ag_name').value.trim();
+  if(!name){ alert('Naam zaroori hai'); return; }
+  const id = document.getElementById('agentBackdrop').dataset.editId;
+  const data = {name, phone:document.getElementById('ag_phone').value.trim(), email:document.getElementById('ag_email').value.trim(), role:document.getElementById('ag_role').value};
+  if(id){ const idx=DB.agents.findIndex(x=>x.id===id); DB.agents[idx]={...DB.agents[idx],...data}; }
+  else{ DB.agents.push({id:uid('A'), ...data}); }
+  await persist(); closeModal('agentBackdrop'); renderAgents(); toast('Agent saved.');
+}
+async function deleteAgent(id){ if(!confirm('Delete karna hai?')) return; DB.agents=DB.agents.filter(a=>a.id!==id); await persist(); renderAgents(); toast('Deleted.'); }
+
+/* ===== Reports ===== */
+function renderReports(){
+  const won = DB.deals.filter(d=>d.stage==='Won');
+  const lost = DB.deals.filter(d=>d.stage==='Lost');
+  document.getElementById('reportsKpi').innerHTML = [
+    ['Total Leads', DB.contacts.length],['Won Deals', won.length],['Lost Deals', lost.length],
+    ['Win Rate', DB.deals.length?Math.round(won.length/DB.deals.length*100)+'%':'0%'],
+    ['Pipeline Value', money(DB.deals.filter(d=>!['Won','Lost'].includes(d.stage)).reduce((s,d)=>s+Number(d.value||0),0))],
+    ['Revenue (Won)', money(won.reduce((s,d)=>s+Number(d.value||0),0))],
+  ].map(k=>`<div class="kpi"><b>${k[1]}</b><span>${k[0]}</span></div>`).join('');
+
+  const statusCounts = {};
+  DB.contacts.forEach(c=>statusCounts[c.stage]=(statusCounts[c.stage]||0)+1);
+  const maxSt = Math.max(1,...Object.values(statusCounts));
+  document.getElementById('statusBars').innerHTML = LEAD_STAGES.map(s=>`
+    <div class="source-row"><span class="slabel">${s}</span><div class="sbar-wrap"><div class="sbar" style="width:${((statusCounts[s]||0)/maxSt*100)}%"></div></div><span class="scount">${statusCounts[s]||0}</span></div>
+  `).join('');
+
+  const funnelStages = ['New','Contacted','Qualified','Site Visit','Negotiation','Won'];
+  const total = DB.contacts.length || 1;
+  document.getElementById('funnelBars').innerHTML = funnelStages.map(s=>{
+    const count = DB.contacts.filter(c=>c.stage===s).length;
+    return `<div class="source-row"><span class="slabel">${s}</span><div class="sbar-wrap"><div class="sbar" style="width:${(count/total*100)}%"></div></div><span class="scount">${count}</span></div>`;
+  }).join('');
+
+  document.getElementById('tblAgentPerf').innerHTML = DB.agents.length ? DB.agents.map(a=>{
+    const leads = DB.contacts.filter(c=>c.agent===a.id).length;
+    const wonA = DB.deals.filter(d=>d.agent===a.id && d.stage==='Won');
+    const fuDone = DB.activities.filter(x=>x.agent===a.id).length;
+    return `<tr><td>${esc(a.name)}</td><td>${leads}</td><td>${wonA.length}</td><td>${money(wonA.reduce((s,d)=>s+Number(d.value||0),0))}</td><td>${fuDone}</td></tr>`;
+  }).join('') : emptyRow(5);
+
+  const byMonth = {};
+  won.forEach(d=>{ const m=(d.closing||'').slice(0,7)||'Unscheduled'; byMonth[m]=byMonth[m]||{count:0,rev:0}; byMonth[m].count++; byMonth[m].rev+=Number(d.value||0); });
+  const monthRows = Object.entries(byMonth).sort((a,b)=>a[0].localeCompare(b[0]));
+  document.getElementById('tblRevenue').innerHTML = monthRows.length ? monthRows.map(([m,d])=>`<tr><td>${esc(m)}</td><td>${d.count}</td><td>${money(d.rev)}</td></tr>`).join('') : emptyRow(3);
+}
+
+/* ===== Documents ===== */
+function renderDocuments(){
+  document.getElementById('tblDocs').innerHTML = DB.documents.length ? DB.documents.map(d=>`
+    <tr><td>📄 ${esc(d.filename)}</td><td>${esc(d.category)}</td><td>${esc(d.contactId?contactName(d.contactId):(d.propertyId?propertyTitle(d.propertyId):'—'))}</td>
+    <td>${esc((d.uploaded||'').slice(0,10))}</td>
+    <td><div class="row-actions">${d.data?`<a class="btn sm" href="${d.data}" download="${esc(d.filename)}">⬇</a>`:''}<button class="btn sm" onclick="deleteDocument('${d.id}')">🗑</button></div></td></tr>
+  `).join('') : emptyRow(5);
+}
+function openDocumentModal(){
+  fillContactSelect('doc_contact','');
+  fillPropertySelect('doc_property','');
+  document.getElementById('doc_file').value='';
+  document.getElementById('documentBackdrop').classList.add('open');
+}
+async function saveDocument(){
+  const file = document.getElementById('doc_file').files[0];
+  if(!file){ alert('File select karein'); return; }
+  const category = document.getElementById('doc_category').value;
+  const contactId = document.getElementById('doc_contact').value;
+  const propertyId = document.getElementById('doc_property').value;
+  const finish = (dataUrl)=>{
+    DB.documents.push({id:uid('DOC'), filename:file.name, category, contactId, propertyId, uploaded:new Date().toISOString(), data:dataUrl||null});
+    persist(); closeModal('documentBackdrop'); renderDocuments(); toast('Document saved.');
+  };
+  if(file.size < 3*1024*1024 && (file.type.startsWith('image/') || file.type==='application/pdf')){
+    const r = new FileReader(); r.onload=()=>finish(r.result); r.readAsDataURL(file);
+  } else { finish(null); }
+}
+async function deleteDocument(id){ DB.documents=DB.documents.filter(d=>d.id!==id); await persist(); renderDocuments(); }
+
+/* ===== Settings ===== */
+function renderSettings(){
+  document.getElementById('s_company').value = DB.settings.companyName||'';
+  document.getElementById('s_tagline').value = DB.settings.tagline||'';
+  document.getElementById('stagesList').textContent = LEAD_STAGES.join(' → ');
+}
+async function saveSettings(){
+  DB.settings.companyName = document.getElementById('s_company').value.trim();
+  DB.settings.tagline = document.getElementById('s_tagline').value.trim();
+  await persist(); toast('Settings saved.');
+}
+function exportBackup(){
+  const blob = new Blob([JSON.stringify(DB,null,2)], {type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='estateflow-backup.json'; a.click();
+  toast('Backup exported.');
+}
+function importBackup(e){
+  const file = e.target.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = async ()=>{ try{ DB = JSON.parse(r.result); await persist(); renderCurrentView(); toast('Backup imported.'); }catch(err){ alert('Invalid backup file.'); } };
+  r.readAsText(file);
+}
+async function resetDemoData(){
+  if(!confirm('Yeh sab current data delete karke demo data reset kar dega. Confirm?')) return;
+  seed(); await persist(); renderCurrentView(); toast('Demo data reset.');
+}
+
+/* ===== Persistence & seed demo data ===== */
+async function persist(){ try{ localStorage.setItem('estateflow_db', JSON.stringify(DB)); }catch(e){ console.error(e); } }
+function seed(){
+  DB.agents = [
+    {id:'A1', name:'Amit Kalita', phone:'9864000001', email:'amit@estateflow.demo', role:'Senior Agent'},
+    {id:'A2', name:'Simran Kaur', phone:'9864000002', email:'simran@estateflow.demo', role:'Agent'},
+  ];
+  DB.properties = [
+    {id:'P1', title:'Green Valley 3BHK', listing:'Sale', category:'Residential', type:'Apartment', price:5000000, beds:3, area:1450, city:'Guwahati', locality:'Zoo Road', status:'Available', agent:'A1', description:'Spacious 3BHK with park view.', images:[]},
+    {id:'P2', title:'Riverside Villa', listing:'Sale', category:'Residential', type:'Villa', price:12000000, beds:4, area:2800, city:'Guwahati', locality:'Dispur', status:'Under Offer', agent:'A2', description:'Premium riverside villa.', images:[]},
+    {id:'P3', title:'GS Road Commercial Shop', listing:'Rent', category:'Commercial', type:'Shop', price:45000, beds:0, area:600, city:'Guwahati', locality:'GS Road', status:'Available', agent:'A1', description:'High footfall commercial space.', images:[]},
+  ];
+  DB.contacts = [
+    {id:'L1', name:'Rahul Sharma', phone:'9876543210', whatsapp:'9876543210', email:'rahul.sharma@example.com', city:'Guwahati', address:'Zoo Road', source:'99acres', campaign:'', property:'3BHK Flat, Guwahati', ptype:'Residential', intent:'Buy', config:'3BHK', budgetMin:4000000, budgetMax:5500000, stage:'Site Visit', priority:'High', agent:'A1', nextFollowup:new Date().toISOString().slice(0,10), created:new Date().toISOString(), score:72, notes:[{text:'Site visit next weekend ke liye schedule karna hai.', date:'15/10/2026'}]},
+    {id:'L2', name:'Priya Das', phone:'9123456780', whatsapp:'9123456780', email:'priya.das@example.com', city:'Guwahati', address:'Dispur', source:'MagicBricks', campaign:'', property:'2BHK Flat, Dispur', ptype:'Residential', intent:'Buy', config:'2BHK', budgetMin:2500000, budgetMax:3200000, stage:'New', priority:'Medium', agent:'A2', nextFollowup:'', created:new Date(Date.now()-86400000).toISOString(), score:45, notes:[{text:'Loan pre-approval abhi pending hai.', date:'16/10/2026'}]},
+    {id:'L3', name:'Manoj Baruah', phone:'9988776655', whatsapp:'9988776655', email:'manoj.b@example.com', city:'Guwahati', address:'Beltola', source:'Referral', campaign:'', property:'Commercial Shop, GS Road', ptype:'Commercial', intent:'Buy', config:'', budgetMin:10000000, budgetMax:13000000, stage:'Negotiation', priority:'High', agent:'A1', nextFollowup:'', created:new Date(Date.now()-172800000).toISOString(), score:81, notes:[{text:'Price negotiation chal rahi hai.', date:'14/10/2026'}]},
+  ];
+  DB.deals = [
+    {id:'D1', contactId:'L3', propertyId:'P3', value:9500000, closing:'2026-11-10', stage:'Negotiation', probability:65, agent:'A1', commission:2, notes:''},
+    {id:'D2', contactId:'L1', propertyId:'P1', value:5200000, closing:'2026-11-20', stage:'Qualified', probability:40, agent:'A1', commission:2, notes:''},
+  ];
+  DB.visits = [
+    {id:'V1', contactId:'L1', propertyId:'P1', date:new Date(Date.now()+86400000).toISOString().slice(0,10), time:'11:00', agent:'A1', status:'Scheduled', notes:''},
+  ];
+  const today = new Date().toISOString().slice(0,10);
+  DB.tasks = [
+    {id:'T1', title:'Follow-up call for loan status', contactId:'L2', type:'Call', priority:'High', due:today, time:'15:00', agent:'A2', status:'Pending', notes:''},
+    {id:'T2', title:'Send shop brochure', contactId:'L3', type:'Document', priority:'Medium', due:new Date(Date.now()+86400000).toISOString().slice(0,10), time:'', agent:'A1', status:'Pending', notes:''},
+  ];
+  DB.activities = [
+    {id:'AC1', contactId:'L1', type:'Call', outcome:'Interested', agent:'A1', notes:'Site visit ke liye confirm kiya.', date:new Date(Date.now()-3600000).toISOString()},
+    {id:'AC2', contactId:'L3', type:'Meeting', outcome:'Follow-up Scheduled', agent:'A1', notes:'Price negotiation discuss hui.', date:new Date(Date.now()-7200000).toISOString()},
+  ];
+  DB.documents = [];
+  DB.settings = {companyName:'Estateflow Realty', tagline:'Trusted property partners in Guwahati'};
+}
+function load(){
+  try{
+    const raw = localStorage.getItem('estateflow_db');
+    if(raw){ DB = JSON.parse(raw); if(DB.contacts && DB.contacts.length) return; }
+  }catch(e){ console.error(e); }
+  seed(); persist();
+}
+
+load();
+buildNav();
+document.querySelector('nav a[data-view="overview"]').classList.add('active');
+renderOverview();
+</script>
+</body>
+</html>
