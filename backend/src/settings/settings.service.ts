@@ -1,3 +1,8 @@
+import { Inject } from '@nestjs/common';
+import { REQUEST } from '@nestjs/core';
+import { TenantRequest } from '../tenancy/tenant.registry';
+import { defaultFeatures } from '../tenancy/features';
+import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -18,6 +23,8 @@ export const DEFAULT_SETTINGS = {
 @Injectable()
 export class SettingsService {
   constructor(
+    @Inject(REQUEST) private readonly request: TenantRequest,
+    private readonly config: ConfigService,
     @InjectRepository(Setting) private readonly repo: Repository<Setting>,
   ) {}
 
@@ -38,6 +45,10 @@ export class SettingsService {
   /** Option lists the UI uses for dropdowns and labels. */
   meta() {
     return {
+      workspace: this.request.crmClient ? { id: this.request.crmClient.id, name: this.request.crmClient.name, slug: this.request.crmClient.slug } : null,
+      features: this.request.crmClient?.features ?? defaultFeatures(),
+      maxImagesPerProperty: Math.min(Number(this.config.get('MAX_IMAGES_PER_PROPERTY', 20)), this.request.crmClient?.maxImages ?? 20),
+      maxImageSizeMb: Number(this.config.get('MAX_IMAGE_SIZE_MB', 5)),
       roles: Object.values(C.Role),
       designations: C.DESIGNATIONS,
       leadStages: C.LEAD_STAGES,

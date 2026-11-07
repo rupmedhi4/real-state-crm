@@ -9,7 +9,7 @@ interface AuthState {
   /** True until the stored token has been checked against the API. */
   loading: boolean
   sessionExpired: boolean
-  login: (email: string, password: string) => Promise<void>
+  login: (email: string, password: string, workspace?: string) => Promise<void>
   register: (body: { name: string; email: string; phone?: string; password: string }) => Promise<void>
   logout: () => void
   refreshUser: () => Promise<void>
@@ -44,8 +44,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .finally(() => setLoading(false))
   }, [])
 
-  const login = useCallback(async (email: string, password: string) => {
-    const res = await authApi.login(email, password)
+  const login = useCallback(async (email: string, password: string, workspace?: string) => {
+    const res = await authApi.login(email, password, workspace)
     tokenStore.set(res.accessToken)
     setSessionExpired(false)
     setUser(res.user)

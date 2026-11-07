@@ -1,3 +1,5 @@
+import { Inject } from '@nestjs/common';
+import { TENANT_DATA_SOURCE } from '../tenancy/tenant.registry';
 import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { LEAD_STAGES } from '../common/constants';
@@ -9,7 +11,7 @@ type Row = Record<string, unknown>;
 /** Read-only aggregates computed directly from the database. */
 @Injectable()
 export class ReportsService {
-  constructor(private readonly db: DataSource) {}
+  constructor(@Inject(TENANT_DATA_SOURCE) private readonly db: DataSource) {}
 
   /** Raw SQL returning typed rows (pg returns COUNT/SUM as strings). */
   private q<T = Row>(sql: string, params?: unknown[]): Promise<T[]> {

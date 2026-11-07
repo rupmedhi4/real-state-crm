@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { TenantRepositoriesModule } from '../tenancy/tenancy.module';
 import { Setting } from './setting.entity';
 import { SettingsController } from './settings.controller';
 import { SettingsService } from './settings.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Setting])],
+  imports: [TenantRepositoriesModule.forFeature([Setting])],
   controllers: [SettingsController],
   providers: [SettingsService],
 })

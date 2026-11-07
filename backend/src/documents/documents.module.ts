@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { TenantRepositoriesModule } from '../tenancy/tenancy.module';
 import { uploadModule } from '../storage/upload.config';
 import { CrmDocument } from './document.entity';
 import { DocumentsController } from './documents.controller';
@@ -7,7 +7,7 @@ import { DocumentsService } from './documents.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([CrmDocument]),
+    TenantRepositoriesModule.forFeature([CrmDocument]),
     uploadModule('MAX_DOCUMENT_SIZE_MB', 10),
   ],
   controllers: [DocumentsController],

@@ -1,3 +1,5 @@
+import { Inject } from '@nestjs/common';
+import { TENANT_DATA_SOURCE } from '../tenancy/tenant.registry';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, DataSource, Repository } from 'typeorm';
@@ -20,7 +22,7 @@ function dayAfter(date: string) {
 export class VisitsService {
   constructor(
     @InjectRepository(Visit) private readonly repo: Repository<Visit>,
-    private readonly dataSource: DataSource,
+    @Inject(TENANT_DATA_SOURCE) private readonly dataSource: DataSource,
   ) {}
 
   private baseQuery() {

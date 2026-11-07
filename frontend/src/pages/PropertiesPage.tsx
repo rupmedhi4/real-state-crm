@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { DataTable, Pagination, RowActions } from '../components/DataTable'
 import type { Column } from '../components/DataTable'
 import { FilterSelect } from '../components/Form'
+import { PropertyDetail } from '../components/PropertyDetail'
 import { PropertyForm } from '../components/forms/PropertyForm'
-import { ConfirmDialog, Modal } from '../components/Modal'
+import { ConfirmDialog } from '../components/Modal'
 import { Badge, ErrorBox, PageHead, Spinner, Toggle } from '../components/ui'
 import { useIsManager } from '../context/AuthContext'
 import { useData } from '../context/DataContext'
@@ -54,7 +55,7 @@ export function PropertiesPage() {
       render: (p) => (
         <span className="cell-name">
           {p.images[0] ? <img className="avatar" src={fileUrl(p.images[0].url)} alt="" /> : <div className="avatar-fallback">🏠</div>}
-          <span className="name-sub">{p.title}<small>{p.images.length} photo(s)</small></span>
+          <span className="name-sub"><button className="property-title-link" onClick={() => setViewing(p)}>{p.title}</button><small>{p.images.length} photo(s)</small></span>
         </span>
       ),
     },
@@ -69,7 +70,7 @@ export function PropertiesPage() {
       header: 'Actions',
       render: (p) => (
         <RowActions>
-          <button className="btn sm" onClick={() => setEditing(p)}>✏️</button>
+          <button className="btn sm" onClick={() => setViewing(p)}>View</button><button className="btn sm" aria-label={`Edit ${p.title}`} onClick={() => setEditing(p)}>Edit</button>
           {isManager && <button className="btn sm" onClick={() => setDeleting(p)}>🗑</button>}
         </RowActions>
       ),
@@ -78,7 +79,7 @@ export function PropertiesPage() {
 
   return (
     <>
-      <PageHead title="Properties" subtitle="Inventory — sale, rent aur lease listings">
+      <PageHead title="Properties" subtitle="Manage listings, owners and property photo galleries">
         <Toggle value={view} options={[['grid', 'Grid'], ['table', 'Table']]} onChange={setView} />
         <button className="btn primary" onClick={() => setCreateOpen(true)}>+ Add Property</button>
       </PageHead>
@@ -148,7 +149,7 @@ export function PropertiesPage() {
                   </div>
                   <div style={{ marginTop: 8 }}><Badge value={p.status} /></div>
                   <div className="prop-actions">
-                    <button className="btn sm" onClick={() => setEditing(p)}>Edit</button>
+                    <button className="btn sm" onClick={() => setViewing(p)}>View</button><button className="btn sm" onClick={() => setEditing(p)}>Edit</button>
                     {isManager && <button className="btn sm danger" onClick={() => setDeleting(p)}>Delete</button>}
                   </div>
                 </div>
@@ -178,27 +179,7 @@ export function PropertiesPage() {
           onSaved={() => list.reload()}
         />
       )}
-      {viewing && (
-        <Modal title={viewing.title} size="wide" onClose={() => setViewing(null)}
-          footer={<><button className="btn" onClick={() => setViewing(null)}>Close</button><button className="btn primary" onClick={() => { setEditing(viewing); setViewing(null) }}>Edit</button></>}>
-          {viewing.images.length ? (
-            <div className="gallery">
-              {viewing.images.map((img) => (
-                <a key={img.id} href={fileUrl(img.url)} target="_blank" rel="noreferrer"><img src={fileUrl(img.url)} alt={img.originalName} /></a>
-              ))}
-            </div>
-          ) : <p className="muted">No photos yet.</p>}
-          <dl className="kv" style={{ marginTop: 14 }}>
-            <dt>Price</dt><dd>{price(viewing)}</dd>
-            <dt>Type</dt><dd>{viewing.category} · {viewing.propertyType} · {viewing.listingType}</dd>
-            <dt>Specs</dt><dd>{viewing.bedrooms ?? '—'} bed · {viewing.areaSqft ?? '—'} sqft</dd>
-            <dt>Location</dt><dd>{[viewing.address, viewing.locality, viewing.city].filter(Boolean).join(', ') || '—'}</dd>
-            <dt>Status</dt><dd><Badge value={viewing.status} /></dd>
-            <dt>Agent</dt><dd>{viewing.agent?.name ?? '—'}</dd>
-            <dt>Description</dt><dd style={{ whiteSpace: 'pre-wrap' }}>{viewing.description ?? '—'}</dd>
-          </dl>
-        </Modal>
-      )}
+      {viewing && <PropertyDetail property={viewing} onClose={() => setViewing(null)} onEdit={() => { setEditing(viewing); setViewing(null) }} />}
       {deleting && (
         <ConfirmDialog
           message={<>Delete <b>{deleting.title}</b> and its {deleting.images.length} photo(s)? Deals and visits keep existing without the property link.</>}

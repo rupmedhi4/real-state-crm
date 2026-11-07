@@ -48,8 +48,9 @@ function resource<T, Body = Partial<T>>(base: string) {
 }
 
 export const authApi = {
-  login: (email: string, password: string) =>
-    post<{ accessToken: string; user: User }>('/auth/login', { email, password }),
+  options: () => get<{ registrationEnabled: boolean }>('/auth/options'),
+  login: (email: string, password: string, workspace?: string) =>
+    post<{ accessToken: string; user: User }>('/auth/login', { email, password, workspace: workspace || undefined }),
   register: (body: { name: string; email: string; phone?: string; password: string }) =>
     post<{ accessToken: string; user: User }>('/auth/register', body),
 }
@@ -155,6 +156,7 @@ export const documentsApi = {
 }
 
 export const settingsApi = {
+  branding: (workspace?: string) => get<{ companyName: string; tagline: string }>('/settings/branding', { workspace }),
   get: () => get<Settings>('/settings'),
   meta: () => get<Meta>('/settings/meta'),
   update: (body: Partial<Settings>) => put<Settings>('/settings', body),

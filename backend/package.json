@@ -28,7 +28,9 @@
     "db:setup": "npm run migration:run && npm run seed",
     "db:clean": "ts-node src/database/seed.ts --reset --empty",
     "create-admin": "ts-node src/database/create-admin.ts",
-    "start:render": "npm run migration:run:prod && node dist/database/create-admin.js && node dist/main.js"
+    "start:render": "npm run migration:run:prod && node dist/database/create-admin.js && node dist/database/create-master.js && node dist/main.js",
+    "check:services": "ts-node src/database/check-services.ts",
+    "create-master": "ts-node src/database/create-master.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1156.0",

@@ -7,6 +7,10 @@ import {
 } from 'class-validator';
 
 export class LoginDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  workspace?: string;
   @IsEmail()
   email: string;
 

@@ -86,6 +86,18 @@ export interface Property {
   description: string | null;
   agentId: string | null;
   agent: Ref | null;
+  bathrooms: number | null;
+  balconies: number | null;
+  parkingSpaces: number | null;
+  floorNumber: number | null;
+  totalFloors: number | null;
+  furnishing: string | null;
+  possessionStatus: string | null;
+  facing: string | null;
+  reraNumber: string | null;
+  ownerName: string | null;
+  ownerPhone: string | null;
+  amenities: string | null;
   images: PropertyImage[];
   createdAt: string;
 }
@@ -237,6 +249,10 @@ export interface Settings {
 }
 
 export interface Meta {
+  workspace: { id: string; name: string; slug: string } | null;
+  features: Record<string, boolean>;
+  maxImagesPerProperty: number;
+  maxImageSizeMb: number;
   roles: Role[];
   designations: string[];
   leadStages: string[];

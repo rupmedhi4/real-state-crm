@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { TenantRepositoriesModule } from '../tenancy/tenancy.module';
 import { Activity } from '../communications/activity.entity';
 import { uploadModule } from '../storage/upload.config';
 import { Contact } from './contact.entity';
@@ -8,7 +8,7 @@ import { ContactsService } from './contacts.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Contact, Activity]),
+    TenantRepositoriesModule.forFeature([Contact, Activity]),
     uploadModule('MAX_IMAGE_SIZE_MB', 5),
   ],
   controllers: [ContactsController],

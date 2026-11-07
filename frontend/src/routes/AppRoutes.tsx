@@ -1,3 +1,6 @@
+import type { ReactNode } from 'react'
+import { useData } from '../context/DataContext'
+import { MasterAdminPage } from '../pages/MasterAdminPage'
 import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { Spinner } from '../components/ui'
@@ -40,26 +43,35 @@ function ProtectedRoute() {
   )
 }
 
+
+function FeatureGate({ feature, children }: { feature: string; children: ReactNode }) {
+  const { meta } = useData()
+  if (!meta) return <div className="center-pad"><Spinner /></div>
+  if (meta.features?.[feature] === false) return <div className="center-pad"><h2>Feature not enabled</h2><p>Contact your master administrator to enable this module for your account.</p></div>
+  return children
+}
+
 export function AppRoutes() {
   return (
     <Routes>
+      <Route path="/master" element={<MasterAdminPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
-          <Route index element={<DashboardPage />} />
-          <Route path="leads" element={<ContactsPage key="leads" mode="leads" />} />
-          <Route path="clients" element={<ContactsPage key="clients" mode="clients" />} />
-          <Route path="contacts/:id" element={<ContactDetailPage />} />
-          <Route path="properties" element={<PropertiesPage />} />
-          <Route path="deals" element={<DealsPage />} />
-          <Route path="visits" element={<VisitsPage />} />
-          <Route path="tasks" element={<TasksPage />} />
-          <Route path="communications" element={<CommunicationsPage />} />
-          <Route path="marketing" element={<MarketingPage />} />
-          <Route path="agents" element={<AgentsPage />} />
-          <Route path="reports" element={<ReportsPage />} />
-          <Route path="documents" element={<DocumentsPage />} />
+          <Route index element={<FeatureGate feature="dashboard"><DashboardPage /></FeatureGate>} />
+          <Route path="leads" element={<FeatureGate feature="leads"><ContactsPage key="leads" mode="leads" /></FeatureGate>} />
+          <Route path="clients" element={<FeatureGate feature="leads"><ContactsPage key="clients" mode="clients" /></FeatureGate>} />
+          <Route path="contacts/:id" element={<FeatureGate feature="leads"><ContactDetailPage /></FeatureGate>} />
+          <Route path="properties" element={<FeatureGate feature="properties"><PropertiesPage /></FeatureGate>} />
+          <Route path="deals" element={<FeatureGate feature="deals"><DealsPage /></FeatureGate>} />
+          <Route path="visits" element={<FeatureGate feature="visits"><VisitsPage /></FeatureGate>} />
+          <Route path="tasks" element={<FeatureGate feature="tasks"><TasksPage /></FeatureGate>} />
+          <Route path="communications" element={<FeatureGate feature="communications"><CommunicationsPage /></FeatureGate>} />
+          <Route path="marketing" element={<FeatureGate feature="marketing"><MarketingPage /></FeatureGate>} />
+          <Route path="agents" element={<FeatureGate feature="team"><AgentsPage /></FeatureGate>} />
+          <Route path="reports" element={<FeatureGate feature="reports"><ReportsPage /></FeatureGate>} />
+          <Route path="documents" element={<FeatureGate feature="documents"><DocumentsPage /></FeatureGate>} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="*" element={<div className="center-pad"><h2>Page not found</h2></div>} />
         </Route>
