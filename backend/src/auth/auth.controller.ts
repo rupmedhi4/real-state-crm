@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Public } from '../common/decorators';
 import { LoginDto, RegisterDto } from './auth.dto';
@@ -8,6 +8,12 @@ import { AuthService } from './auth.service';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
+
+  @Public()
+  @Get('options')
+  options() {
+    return { registrationEnabled: this.auth.registrationEnabled() };
+  }
 
   @Public()
   @Post('login')

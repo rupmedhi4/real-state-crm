@@ -1,0 +1,9 @@
+# Apache static frontend deployment: use this on a dedicated CRM subdomain.
+# The API must be hosted on Node.js and configured with VITE_API_URL at build time.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ index.html [L]
+</IfModule>

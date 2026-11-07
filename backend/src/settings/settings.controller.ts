@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Put } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Role } from '../common/constants';
-import { Roles } from '../common/decorators';
+import { Public, Roles } from '../common/decorators';
 import { UpdateSettingsDto } from './settings.dto';
 import { SettingsService } from './settings.service';
 
@@ -10,6 +10,13 @@ import { SettingsService } from './settings.service';
 @Controller('settings')
 export class SettingsController {
   constructor(private readonly settings: SettingsService) {}
+
+  @Public()
+  @Get('branding')
+  async branding() {
+    const settings = await this.settings.get();
+    return { companyName: settings.companyName, tagline: settings.tagline };
+  }
 
   @Get()
   get() {

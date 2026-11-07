@@ -1,3 +1,5 @@
+import { Inject } from '@nestjs/common';
+import { TENANT_DATA_SOURCE } from '../tenancy/tenant.registry';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
@@ -24,7 +26,7 @@ interface PerfRow {
 export class MarketingService {
   constructor(
     @InjectRepository(Campaign) private readonly repo: Repository<Campaign>,
-    private readonly dataSource: DataSource,
+    @Inject(TENANT_DATA_SOURCE) private readonly dataSource: DataSource,
   ) {}
 
   async findAll(query: CampaignQueryDto) {

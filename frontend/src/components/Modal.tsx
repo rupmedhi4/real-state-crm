@@ -69,7 +69,7 @@ export function FormFooter({ onCancel, saving, label = 'Save' }: {
 }) {
   return (
     <>
-      <button type="button" className="btn" onClick={onCancel}>
+      <button type="button" className="btn" onClick={onCancel} disabled={saving}>
         Cancel
       </button>
       <button type="submit" className="btn primary" disabled={saving}>

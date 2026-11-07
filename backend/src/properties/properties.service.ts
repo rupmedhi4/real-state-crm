@@ -1,3 +1,7 @@
+import { REQUEST } from '@nestjs/core';
+import { TenantRequest } from '../tenancy/tenant.registry';
+import { Inject } from '@nestjs/common';
+import { TENANT_DATA_SOURCE } from '../tenancy/tenant.registry';
 import {
   BadRequestException,
   Injectable,
@@ -26,14 +30,15 @@ export class PropertiesService {
   private readonly maxImages: number;
 
   constructor(
+    @Inject(REQUEST) private readonly request: TenantRequest,
     @InjectRepository(Property) private readonly repo: Repository<Property>,
     @InjectRepository(PropertyImage)
     private readonly images: Repository<PropertyImage>,
-    private readonly dataSource: DataSource,
+    @Inject(TENANT_DATA_SOURCE) private readonly dataSource: DataSource,
     private readonly storage: StorageService,
     config: ConfigService,
   ) {
-    this.maxImages = Number(config.get('MAX_IMAGES_PER_PROPERTY', 20));
+    this.maxImages = Math.min(Number(config.get('MAX_IMAGES_PER_PROPERTY', 20)), this.request.crmClient?.maxImages ?? 20);
   }
 
   async findAll(query: PropertyQueryDto) {
@@ -129,38 +134,35 @@ export class PropertiesService {
   async addImages(id: string, files: Express.Multer.File[]) {
     await this.ensureExists(id);
     if (!files?.length) throw new BadRequestException('No images uploaded');
-    const existing = await this.images.count({ where: { propertyId: id } });
-    if (existing + files.length > this.maxImages) {
-      throw new BadRequestException(
-        `A property can have at most ${this.maxImages} images`,
-      );
-    }
     const exts = files.map((f) => validateUpload(f, IMAGE_TYPES));
-
     const stored: string[] = [];
     try {
-      const rows: PropertyImage[] = [];
-      for (let i = 0; i < files.length; i++) {
-        const s = await this.storage.save(
-          'property-images',
-          files[i].buffer,
-          exts[i],
-        );
-        stored.push(s.key);
-        rows.push(
-          this.images.create({
-            propertyId: id,
-            storageKey: s.key,
+      // Serialize uploads for this property so concurrent requests cannot exceed
+      // the gallery limit or assign the same order to two batches.
+      await this.dataSource.transaction(async (em) => {
+        const property = await em.findOne(Property, {
+          where: { id }, lock: { mode: 'pessimistic_write' },
+        });
+        if (!property) throw new NotFoundException('Property not found');
+        const existing = await em.count(PropertyImage, { where: { propertyId: id } });
+        if (existing + files.length > this.maxImages) {
+          throw new BadRequestException(`A property can have at most ${this.maxImages} images`);
+        }
+        const rows: PropertyImage[] = [];
+        for (let i = 0; i < files.length; i++) {
+          const saved = await this.storage.save('property-images', files[i].buffer, exts[i]);
+          stored.push(saved.key);
+          rows.push(this.images.create({
+            propertyId: id, storageKey: saved.key,
             originalName: safeFileName(files[i].originalname),
-            mimeType: files[i].mimetype,
-            sizeBytes: s.size,
+            mimeType: files[i].mimetype, sizeBytes: saved.size,
             sortOrder: existing + i,
-          }),
-        );
-      }
-      await this.images.save(rows);
+          }));
+        }
+        await em.save(PropertyImage, rows);
+      });
     } catch (err) {
-      await Promise.all(stored.map((k) => this.storage.remove(k)));
+      await Promise.allSettled(stored.map((key) => this.storage.remove(key)));
       throw err;
     }
     return this.findOne(id);
@@ -217,11 +219,16 @@ export class PropertiesService {
 
   private async attachImages(properties: Property[]) {
     if (!properties.length) return;
+    if (this.request.crmClient?.features.photos === false) {
+      for (const property of properties) property.images = [];
+      return;
+    }
     const imgs = await this.images
       .createQueryBuilder('i')
       .where('i.propertyId IN (:...ids)', { ids: properties.map((p) => p.id) })
       .orderBy('i.sortOrder', 'ASC')
       .getMany();
+    for (const img of imgs) img.workspace = this.request.crmClient?.slug;
     for (const p of properties) {
       p.images = imgs.filter((i) => i.propertyId === p.id);
     }

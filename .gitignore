@@ -19,3 +19,6 @@ backend/uploads/
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# Local PostgreSQL runtime and data
+.local/

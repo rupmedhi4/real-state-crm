@@ -1,3 +1,6 @@
+import { Inject } from '@nestjs/common';
+import { REQUEST } from '@nestjs/core';
+import { TenantRegistry, TenantRequest } from '../tenancy/tenant.registry';
 import {
   BadRequestException,
   ConflictException,
@@ -26,6 +29,8 @@ const BCRYPT_ROUNDS = 12;
 @Injectable()
 export class UsersService {
   constructor(
+    @Inject(REQUEST) private readonly request: TenantRequest,
+    private readonly tenants: TenantRegistry,
     @InjectRepository(User) private readonly repo: Repository<User>,
   ) {}
 
@@ -101,6 +106,9 @@ export class UsersService {
 
   async update(id: string, dto: UpdateUserDto, actor: AuthUser) {
     const user = await this.findOne(id);
+    if (id === this.request.crmClient?.ownerId && ((dto.role !== undefined && dto.role !== Role.ADMIN) || dto.isActive === false)) {
+      throw new BadRequestException('The primary client owner must remain active as an admin. The master administrator controls client suspension.');
+    }
     const touchesAccess = dto.role !== undefined || dto.isActive !== undefined;
     if (actor.role !== Role.ADMIN) {
       if (user.role === Role.ADMIN || dto.role === Role.ADMIN) {
@@ -123,6 +131,9 @@ export class UsersService {
     if (dto.isActive !== undefined) user.isActive = dto.isActive;
     if (dto.password) user.passwordHash = await this.hashPassword(dto.password);
     await this.repo.save(user);
+    if (id === this.request.crmClient?.ownerId && dto.email) {
+      await this.tenants.central.query('UPDATE public.platform_clients SET "ownerEmail" = $2 WHERE id = $1', [this.request.crmClient.id, user.email]);
+    }
     return this.findOne(id);
   }
 
@@ -151,6 +162,7 @@ export class UsersService {
   }
 
   async remove(id: string, actor: AuthUser) {
+    if (id === this.request.crmClient?.ownerId) throw new BadRequestException('The primary client owner cannot be deleted');
     if (id === actor.id) {
       throw new BadRequestException('You cannot delete your own account');
     }

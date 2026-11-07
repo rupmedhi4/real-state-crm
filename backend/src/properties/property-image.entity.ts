@@ -31,10 +31,13 @@ export class PropertyImage extends BaseEntity {
   @Column({ type: 'int', default: 0 })
   sortOrder: number;
 
+  @Exclude()
+  workspace?: string;
+
   /** Public URL path; property photos are listing material, not private. */
   @Expose()
   get url(): string {
     // storageKey is "property-images/<uuid>.<ext>"
-    return `/api/files/${this.storageKey}`;
+    return `/api/files/${this.storageKey}${this.workspace ? `?workspace=${encodeURIComponent(this.workspace)}` : ''}`;
   }
 }

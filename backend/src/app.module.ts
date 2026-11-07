@@ -1,3 +1,6 @@
+import { TenancyModule } from './tenancy/tenancy.module';
+import { FeatureGuard } from './tenancy/feature.guard';
+import { PlatformModule } from './platform/platform.module';
 import { ClassSerializerInterceptor, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
@@ -26,6 +29,8 @@ import { VisitsModule } from './visits/visits.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true, validate: validateEnv }),
     TypeOrmModule.forRootAsync({ useFactory: () => dbOptions(process.env) }),
+    TenancyModule,
+    PlatformModule,
     StorageModule,
     AuthModule,
     UsersModule,
@@ -46,6 +51,7 @@ import { VisitsModule } from './visits/visits.module';
     // Order matters: authenticate first, then check roles.
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
+    { provide: APP_GUARD, useClass: FeatureGuard },
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
     { provide: APP_INTERCEPTOR, useClass: ClassSerializerInterceptor },
   ],

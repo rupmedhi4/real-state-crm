@@ -1,5 +1,13 @@
 # Render Blueprint: one free web service hosts both the React site and the API.
-# Database: Neon (free PostgreSQL). Files: Cloudflare R2 (free S3-compatible).
+# Database: Neon (free PostgreSQL).
+#
+# Files: stored on the service's own disk. On the free plan that disk is wiped
+# on every restart and redeploy, so uploaded property images and documents do
+# not survive. Switch STORAGE_DRIVER to `s3` and add S3_BUCKET,
+# S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY (and S3_ENDPOINT for Cloudflare R2)
+# once an R2 bucket exists - the backend refuses to start with `s3` until
+# those three are set.
+#
 # Fill the `sync: false` values in the Render dashboard when creating it.
 services:
   - type: web
@@ -22,31 +30,19 @@ services:
         generateValue: true
       - key: CORS_ORIGINS
         sync: false
-      - key: DB_HOST
-        sync: false
-      - key: DB_PORT
-        value: "5432"
-      - key: DB_USER
-        sync: false
-      - key: DB_PASSWORD
-        sync: false
-      - key: DB_NAME
+      - key: REGISTRATION_ENABLED
+        value: "false"
+      - key: DATABASE_URL
         sync: false
       - key: DB_SSL
         value: "true"
+      - key: DB_SSL_REJECT_UNAUTHORIZED
+        value: "true"
       - key: STORAGE_DRIVER
-        value: s3
-      - key: S3_ENDPOINT
+        value: local
+      - key: ALLOW_LEGACY_LOGIN
+        value: "false"
+      - key: MASTER_ADMIN_EMAIL
         sync: false
-      - key: S3_REGION
-        value: auto
-      - key: S3_BUCKET
-        sync: false
-      - key: S3_ACCESS_KEY_ID
-        sync: false
-      - key: S3_SECRET_ACCESS_KEY
-        sync: false
-      - key: ADMIN_EMAIL
-        sync: false
-      - key: ADMIN_PASSWORD
+      - key: MASTER_ADMIN_PASSWORD
         sync: false

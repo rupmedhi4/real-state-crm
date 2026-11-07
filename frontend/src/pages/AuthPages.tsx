@@ -1,38 +1,50 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { TextInput } from '../components/Form'
 import { Spinner } from '../components/ui'
 import { useAuth } from '../context/AuthContext'
 import { errorMessage } from '../services/api'
+import { authApi, settingsApi } from '../services/crm'
 
 function Brand() {
+  const workspace = new URLSearchParams(window.location.search).get('workspace') || undefined
+  const [name, setName] = useState('Estateflow')
+  useEffect(() => { settingsApi.branding(workspace).then((b) => setName(b.companyName)).catch(() => {}) }, [])
   return (
     <div className="brand">
       <div className="mark">🏠</div>
-      <span className="brand-name">Estateflow</span>
+      <span className="brand-name">{name}</span>
     </div>
   )
 }
 
+function useRegistration() {
+  const [enabled, setEnabled] = useState<boolean | null>(null)
+  useEffect(() => { authApi.options().then((options) => setEnabled(options.registrationEnabled)).catch(() => setEnabled(false)) }, [])
+  return enabled
+}
+
 export function LoginPage() {
+  const registrationEnabled = useRegistration()
   const { user, login, sessionExpired } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const [workspace, setWorkspace] = useState(new URLSearchParams(window.location.search).get('workspace') || '')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const from = (location.state as { from?: string } | null)?.from ?? '/'
 
-  if (user) return <Navigate to={from} replace />
+  if (user && !workspace) return <Navigate to={from} replace />
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
     setBusy(true)
     setError(null)
     try {
-      await login(email.trim(), password)
+      await login(email.trim(), password, workspace.trim())
       navigate(from, { replace: true })
     } catch (err) {
       setError(errorMessage(err, 'Login failed'))
@@ -49,13 +61,15 @@ export function LoginPage() {
         <p>Real estate CRM for your team.</p>
         {sessionExpired && !error && <div className="form-warn">Your session expired. Please sign in again.</div>}
         {error && <div className="form-error">{error}</div>}
+        <TextInput label="Workspace code" value={workspace} onChange={setWorkspace} placeholder="Provided by your master administrator" />
         <TextInput label="Email" type="email" value={email} onChange={setEmail} required autoComplete="username" autoFocus />
         <TextInput label="Password" type="password" value={password} onChange={setPassword} required autoComplete="current-password" />
         <button className="btn primary" disabled={busy}>
           {busy && <Spinner />} Sign in
         </button>
         <div className="auth-foot">
-          New here? <Link to="/register">Create an account</Link>
+          {registrationEnabled && !workspace ? <>New here? <Link to="/register">Create an account</Link></> : 'Need access? Contact your team administrator.'}
+          <div style={{ marginTop: 10 }}><Link to="/master">Master admin sign in</Link></div>
         </div>
       </form>
     </div>
@@ -63,6 +77,7 @@ export function LoginPage() {
 }
 
 export function RegisterPage() {
+  const registrationEnabled = useRegistration()
   const { user, register } = useAuth()
   const navigate = useNavigate()
   const [v, setV] = useState({ name: '', email: '', phone: '', password: '', confirm: '' })
@@ -71,6 +86,9 @@ export function RegisterPage() {
   const set = (k: keyof typeof v) => (val: string) => setV((p) => ({ ...p, [k]: val }))
 
   if (user) return <Navigate to="/" replace />
+
+  if (registrationEnabled === null) return <div className="auth-page"><Spinner /></div>
+  if (!registrationEnabled) return <div className="auth-page"><div className="auth-card"><Brand /><h1>Join your team</h1><p>Ask your administrator to create your account.</p><Link to="/login">Back to sign in</Link></div></div>
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()

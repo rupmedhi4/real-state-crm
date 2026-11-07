@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { TenantRepositoriesModule } from '../tenancy/tenancy.module';
 import { uploadModule } from '../storage/upload.config';
 import {
   PropertiesController,
@@ -11,7 +11,7 @@ import { Property } from './property.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Property, PropertyImage]),
+    TenantRepositoriesModule.forFeature([Property, PropertyImage]),
     uploadModule('MAX_IMAGE_SIZE_MB', 5),
   ],
   controllers: [PropertiesController, PropertyImageFilesController],

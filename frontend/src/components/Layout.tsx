@@ -1,9 +1,12 @@
+import { masterStore } from '../services/platform'
 import { useEffect, useRef, useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useData } from '../context/DataContext'
 import { useSearch } from '../context/SearchContext'
 import { initials } from '../utils/format'
+
+const ROUTE_FEATURE: Record<string, string> = { '/': 'dashboard', '/leads': 'leads', '/clients': 'leads', '/properties': 'properties', '/deals': 'deals', '/visits': 'visits', '/tasks': 'tasks', '/communications': 'communications', '/marketing': 'marketing', '/agents': 'team', '/reports': 'reports', '/documents': 'documents' }
 
 const NAV = [
   {
@@ -43,9 +46,10 @@ const CREATE = [
 
 export function Layout() {
   const { user, logout } = useAuth()
-  const { settings } = useData()
+  const { settings, meta } = useData()
   const { query, setQuery } = useSearch()
   const navigate = useNavigate()
+  useEffect(() => { document.title = `${settings?.companyName || 'Estateflow'} · Real Estate CRM` }, [settings?.companyName])
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [menu, setMenu] = useState<'create' | 'user' | null>(null)
@@ -65,13 +69,13 @@ export function Layout() {
       <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'open' : ''}`}>
         <div className="brand">
           <div className="mark">🏠</div>
-          <span className="brand-name">{settings?.companyName?.split(' ')[0] || 'Estateflow'}</span>
+          <span className="brand-name">{settings?.companyName || 'Estateflow'}</span>
         </div>
         <nav>
           {NAV.map((g) => (
             <div key={g.group}>
               <div className="navgroup-title">{g.group}</div>
-              {g.items.map((it) => (
+              {g.items.filter((it) => meta?.features?.[ROUTE_FEATURE[it.to]] !== false).map((it) => (
                 <NavLink
                   key={it.to}
                   to={it.to}
@@ -112,7 +116,7 @@ export function Layout() {
               </button>
               {menu === 'create' && (
                 <div className="create-menu">
-                  {CREATE.map(([label, to]) => (
+                  {CREATE.filter(([, to]) => meta?.features?.[ROUTE_FEATURE[to.split('?')[0]]] !== false).map(([label, to]) => (
                     <button
                       key={label}
                       onClick={() => {
@@ -157,6 +161,7 @@ export function Layout() {
             </div>
           </div>
         </div>
+        {meta?.workspace && <div className="workspace-strip"><span>{meta.workspace.name} <small>Workspace: {meta.workspace.slug}</small></span>{masterStore.get() && <NavLink to="/master">← Master console</NavLink>}</div>}
         <main className="content">
           <Outlet />
         </main>

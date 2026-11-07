@@ -1,3 +1,5 @@
+import { Inject } from '@nestjs/common';
+import { TENANT_DATA_SOURCE } from '../tenancy/tenant.registry';
 import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 
@@ -22,7 +24,7 @@ export interface AgentStats {
 /** Team performance, computed live from assigned records. */
 @Injectable()
 export class AgentsService {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(@Inject(TENANT_DATA_SOURCE) private readonly dataSource: DataSource) {}
 
   async stats(): Promise<AgentStats[]> {
     const rows: Record<string, unknown>[] = await this.dataSource.query(`

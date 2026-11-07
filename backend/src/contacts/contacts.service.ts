@@ -1,3 +1,5 @@
+import { Inject } from '@nestjs/common';
+import { TENANT_DATA_SOURCE } from '../tenancy/tenant.registry';
 import {
   ConflictException,
   ForbiddenException,
@@ -31,7 +33,7 @@ export class ContactsService {
     @InjectRepository(Contact) private readonly repo: Repository<Contact>,
     @InjectRepository(Activity)
     private readonly activities: Repository<Activity>,
-    private readonly dataSource: DataSource,
+    @Inject(TENANT_DATA_SOURCE) private readonly dataSource: DataSource,
     private readonly storage: StorageService,
   ) {}
 

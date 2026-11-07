@@ -54,6 +54,42 @@ export class Property extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   description: string | null;
 
+  @Column({ type: 'int', nullable: true })
+  bathrooms: number | null;
+
+  @Column({ type: 'int', nullable: true })
+  balconies: number | null;
+
+  @Column({ type: 'int', nullable: true })
+  parkingSpaces: number | null;
+
+  @Column({ type: 'int', nullable: true })
+  floorNumber: number | null;
+
+  @Column({ type: 'int', nullable: true })
+  totalFloors: number | null;
+
+  @Column({ type: 'varchar', length: 30, nullable: true })
+  furnishing: string | null;
+
+  @Column({ type: 'varchar', length: 40, nullable: true })
+  possessionStatus: string | null;
+
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  facing: string | null;
+
+  @Column({ type: 'varchar', length: 80, nullable: true })
+  reraNumber: string | null;
+
+  @Column({ type: 'varchar', length: 120, nullable: true })
+  ownerName: string | null;
+
+  @Column({ type: 'varchar', length: 30, nullable: true })
+  ownerPhone: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  amenities: string | null;
+
   @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'agentId' })
   agent: User | null;

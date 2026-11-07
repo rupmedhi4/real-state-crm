@@ -22,6 +22,15 @@ Request flow for every feature:
 
 ---
 
+Client deployment guide: [deployment/CLIENT-SETUP.md](deployment/CLIENT-SETUP.md).
+
+The platform now supports a master administrator and isolated client workspaces.
+Use `/master` to create clients, choose their modules, set photo limits, suspend
+access and reset owner credentials. Client login requires the supplied workspace
+code. Each client's CRM tables live in its own PostgreSQL schema; all schemas share
+the same database/project storage allowance. See [Master admin guide](deployment/MASTER-ADMIN.md).
+Public signup and legacy single-company logins are disabled by default in production.
+
 ## 1. Prerequisites
 
 | Tool        | Version  | Check            |
@@ -41,7 +50,8 @@ cp .env.example .env          # Windows: copy .env.example .env
 
 Edit `backend/.env`:
 
-- `DB_PASSWORD` — your PostgreSQL password
+- `DATABASE_URL` — optional Neon PostgreSQL URL (overrides separate DB fields)
+- `DB_PASSWORD` — your local PostgreSQL password
 - `JWT_SECRET` — at least 32 random characters. Generate one:
   `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"`
 
@@ -91,7 +101,7 @@ local development.
 
 To start with **no demo data at all** (only the admin login), run
 `npm run db:clean` in `backend/`. This deletes every record and uploaded-file
-reference in the database, so use it only before real data is entered. Anyone can also sign up at `/register`; new accounts are
+reference in the database, so use it only before real data is entered. When public registration is enabled, users can sign up at `/register`; new accounts are
 **Agents**. On an empty database the first registered account becomes **Admin**.
 
 ## 4. Environment variables
@@ -108,7 +118,9 @@ reference in the database, so use it only before real data is entered. Anyone ca
 | `DB_USER` / `DB_PASSWORD` | `postgres` / — | Credentials |
 | `DB_NAME` | `estateflow_crm` | Database |
 | `DB_NAME_TEST` | `estateflow_crm_test` | Database used by e2e tests (wiped on each run) |
-| `DB_SSL` | `false` | `true` for managed Postgres that requires TLS |
+| `DB_SSL` | `false` | `true` for managed Postgres that requires TLS; certificates are verified |
+| `DATABASE_URL` | — | Optional PostgreSQL URL, including Neon; overrides separate DB fields |
+| `REGISTRATION_ENABLED` | `false` in production, `true` in development | Public signup; keep disabled on customer installations |
 | `DB_LOGGING` | `false` | Log every SQL query |
 | `JWT_SECRET` | — | **Required**, ≥ 32 chars |
 | `JWT_EXPIRES_IN` | `8h` | Session length; users are signed out after this |
@@ -206,11 +218,11 @@ serves it from the backend (same domain, so no CORS setup is needed).
    host, user, password and database name.
 2. Create a Cloudflare R2 bucket and an R2 API token (Object Read & Write).
 3. Push this repo to GitHub, then in Render choose **New → Blueprint** and pick
-   the repo. Fill in the `DB_*`, `S3_*`, `ADMIN_EMAIL` / `ADMIN_PASSWORD`
+   the repo. Fill in the `DB_*`, `S3_*`, `MASTER_ADMIN_EMAIL` / `MASTER_ADMIN_PASSWORD`
    values, and set `CORS_ORIGINS` to the service URL
    (`https://<name>.onrender.com`).
 4. On each start, migrations run and the admin login is created if it does not
-   exist yet. Sign in with `ADMIN_EMAIL` / `ADMIN_PASSWORD`.
+   exist yet. Sign in with `MASTER_ADMIN_EMAIL` / `MASTER_ADMIN_PASSWORD`.
 
 Free Render services sleep after 15 minutes idle; the first request then takes
 about a minute.
