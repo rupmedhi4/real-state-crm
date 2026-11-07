@@ -11,7 +11,7 @@
 # Fill the `sync: false` values in the Render dashboard when creating it.
 services:
   - type: web
-    name: estateflow-crm
+    name: propertyhub
     runtime: node
     plan: free
     buildCommand: >-
