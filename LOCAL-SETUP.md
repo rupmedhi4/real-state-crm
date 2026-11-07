@@ -47,7 +47,11 @@ logins are disabled by default in production.
 The active `backend/.env` now connects to the `estateflow-crm` Neon project
 under `medhi0164@gmail.com`, region Singapore. Shared migrations and the master
 account are created. The API still runs locally on port 3000; hosting is not deployed.
-Images/documents still use local disk until the R2 subscription is approved/configured.
+Images and documents now use the private `estateflow-crm-files` bucket in Neon Object
+Storage on the same Free project. Cloudflare R2 was not activated because it requires
+usage-based billing approval. All clients share the project's free storage allowance.
+Property multi-image uploads, cover selection, private document downloads and cloud
+file deletion have been verified against the running app.
 
 Active master credentials: `.local/master-login.txt` (also
 `.local/cloud-master-login.txt`). Previous local database configuration is preserved
@@ -67,3 +71,16 @@ Mac to the phone's hotspot and run it again. See `.local/MOBILE.md`.
 `.local/start-tunnel.sh` is also present; it exposes the dev server on a
 temporary public URL and is only needed when the two devices cannot share a
 network at all. See `.local/TUNNEL.md`.
+
+## Repeat the cloud upload check
+
+From the project root, with the local frontend/API running:
+
+```sh
+node .local/verify-cloud-uploads.cjs
+```
+
+This creates temporary records only in `demo-realty`, verifies that two uploaded
+photos actually exist in the Neon private bucket, checks cover selection and
+private document access, then removes its records and files. It reads the active
+backend environment without printing credentials. It requires network access.

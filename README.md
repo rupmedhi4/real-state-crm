@@ -205,23 +205,25 @@ buttons a user can't use.
 - Files are stored through `StorageService` (`backend/src/storage/`).
   `STORAGE_DRIVER=local` (default) writes to `UPLOAD_DIR`;
   `STORAGE_DRIVER=s3` uses S3-compatible object storage (AWS S3, Cloudflare R2,
-  Supabase) configured by the `S3_*` variables.
+  Neon Object Storage, Supabase) configured by the `S3_*` variables.
 
 ## 8. Deployment
 
-### Free option: Render + Neon + Cloudflare R2
+### Hosting option: Render + Neon database and Object Storage
 
 `render.yaml` defines one free Render web service that builds the frontend and
 serves it from the backend (same domain, so no CORS setup is needed).
 
 1. Create a free PostgreSQL database on [Neon](https://neon.tech) and note its
    host, user, password and database name.
-2. Create a Cloudflare R2 bucket and an R2 API token (Object Read & Write).
+2. Create a private Neon Object Storage bucket and a branch-scoped Storage
+   read/write credential. Configure `STORAGE_DRIVER=s3` and all `S3_*` values
+   on the host; use the real region, such as `ap-southeast-1`, for signing.
 3. Push this repo to GitHub, then in Render choose **New → Blueprint** and pick
    the repo. Fill in the `DB_*`, `S3_*`, `MASTER_ADMIN_EMAIL` / `MASTER_ADMIN_PASSWORD`
    values, and set `CORS_ORIGINS` to the service URL
    (`https://<name>.onrender.com`).
-4. On each start, migrations run and the admin login is created if it does not
+4. On each start, migrations run and the master login is created if it does not
    exist yet. Sign in with `MASTER_ADMIN_EMAIL` / `MASTER_ADMIN_PASSWORD`.
 
 Free Render services sleep after 15 minutes idle; the first request then takes

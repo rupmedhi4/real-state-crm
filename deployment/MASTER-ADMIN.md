@@ -73,6 +73,10 @@ be added there as well as to the shared CLI migration directory. Platform migrat
 must never run inside a client schema. Each client source applies pending CRM
 migrations when first opened after a backend restart.
 
-The local backend now uses the verified Neon project under medhi0164@gmail.com.
-Hosting is intentionally not configured yet. Browser/mobile visual acceptance and
-a real R2 upload verification remain pending; the R2 usage-based subscription awaits approval.
+The local backend uses the verified Neon project under medhi0164@gmail.com for both
+PostgreSQL and a private Object Storage bucket. The master console sign-in and
+cloud multi-photo upload/read/delete, cover selection and authenticated-only
+document download have been verified. Hosting is intentionally not deployed.
+Cloudflare R2 was not activated; the user requested no payment. The Neon project
+remains on Free, with quotas shared by all workspaces. Full mobile acceptance
+testing remains part of customer handover.

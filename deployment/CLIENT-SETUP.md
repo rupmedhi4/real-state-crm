@@ -25,8 +25,9 @@ Do not reuse local credentials in production. See [MASTER-ADMIN.md](MASTER-ADMIN
 - Company name on sign-in, sidebar and brochure; contact details in brochure.
 
 Automated tests cover API/database behavior, permissions and photo operations.
-Browser/mobile acceptance testing and a real R2 upload remain necessary before
-customer handover. Automated email/SMS, WhatsApp API sending, payment collection,
+The running app has passed a real Neon cloud multi-photo upload/read/delete,
+cover-selection and private-document access check. Full browser/mobile acceptance
+testing remains necessary before customer handover. Automated email/SMS, WhatsApp API sending, payment collection,
 and password-reset email are not implemented; sharing opens WhatsApp for the user.
 
 ## Choose hosting
@@ -73,7 +74,7 @@ Source: https://render.com/docs/free
 5. For a real-data move from local PostgreSQL, take a database backup and restore it
    into the new, empty Neon database using `pg_dump`/`pg_restore`. Verify that a
    backup restores successfully. Existing local uploaded files must also be copied
-   into R2 with their exact storage keys; changing STORAGE_DRIVER alone does not
+   into the selected object store with their exact storage keys; changing STORAGE_DRIVER alone does not
    move them. For a new customer create an empty workspace from the master console. Existing single-company data is not automatically assigned to a new client schema.
 
 Neon Free currently lists 1 GB Postgres storage and 100 CU-hours monthly per project.
@@ -82,28 +83,38 @@ separate 1 GB allowance per CRM customer.
 Monitor compute, storage and network quotas. These limits can change.
 Sources: https://neon.com/pricing , https://neon.com/docs/connect/connect-from-any-app
 
-## 2. Cloudflare R2 for property images and private documents
+## 2. Free Neon Object Storage (active setup)
 
-1. In your Cloudflare dashboard activate R2. Review billing/payment requirements
-   before enabling the service; the free allowance is not an unlimited storage plan.
-2. Create a **Standard** private platform bucket, e.g. `estateflow-platform-files`.
-   Keep the bucket private. This app reads through its backend, so a public bucket,
-   r2.dev URL and browser-to-R2 CORS rule are unnecessary.
-3. Create an R2 S3 API access key with **Object Read & Write** limited to that
-   bucket. Copy the S3 endpoint, access key ID and secret into the backend host's
-   secret environment variables. Do not use an unrestricted account-wide key.
-4. Set `STORAGE_DRIVER=s3`, `S3_REGION=auto`, `S3_ENDPOINT`, `S3_BUCKET`,
-   `S3_ACCESS_KEY_ID` and `S3_SECRET_ACCESS_KEY` from `backend.env.example`.
-5. After deploying, create a temporary property, upload two real photos, select a
-   cover and delete one. Also upload a document and verify its unauthenticated
-   download is rejected. Delete the temporary records after verification.
+The active platform uses the private `estateflow-crm-files` bucket in the same Neon
+Free project as PostgreSQL. Neon currently includes 5 GB of Object Storage per
+project; all client workspaces share that allowance and the project's network and
+compute quotas. No paid plan was enabled. Cloudflare R2 was deliberately left
+inactive because its activation page requires an auto-renewing usage-based
+subscription, which does not fit the user's no-payment instruction.
 
-R2 Standard free allowance currently includes 10 GB-month storage, 1 million Class A
-and 10 million Class B requests monthly; egress is free. Overages can be billed.
-Property image optimisation reduces file sizes, but this app does not impose an
-account-wide billing cap. Set provider budget alerts and monitor usage.
-Sources: https://developers.cloudflare.com/r2/pricing/ ,
-https://developers.cloudflare.com/r2/get-started/
+For a fresh installation:
+
+1. Open **Object storage** in the Neon project and create a **Private** bucket.
+2. Open **Settings > Credentials** and create a dedicated branch credential with
+   only `storage:read` and `storage:write`. Save the complete one-time `.env`
+   snippet securely, including the full key and secret.
+3. Map Neon's `AWS_ENDPOINT_URL_S3` to `S3_ENDPOINT`, `AWS_ACCESS_KEY_ID` to
+   `S3_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` to `S3_SECRET_ACCESS_KEY`, and
+   `AWS_REGION` to `S3_REGION`. Set `STORAGE_DRIVER=s3` and the bucket name in
+   `S3_BUCKET`. Singapore uses `ap-southeast-1` as the signing region.
+4. Keep the bucket private. The backend serves public listing photos through
+   recorded property metadata; private document downloads require client login.
+5. Verify two photos, cover selection and a private document through the app.
+   The active installation has passed this check and removed the test files.
+
+Do not activate R2 or upgrade the Neon project without the owner's permission.
+Review the provider quotas before adding real clients; the free allocation is
+shared by the whole platform and plan limits can change.
+Sources: https://neon.com/docs/introduction/plans ,
+https://neon.com/docs/storage/authentication
+
+Cloudflare R2 remains an optional S3-compatible alternative if usage-based billing
+is approved later. It is not configured or required for the current installation.
 
 ## 3. Deploy the backend and create the owner account
 
@@ -130,7 +141,7 @@ npm run start:render
 `start:render` applies migrations, creates the requested master administrator if absent, and starts
 the server serving both the app and API. Required env variables must already be set.
 Do not run the development seed or `db:clean` on a customer database.
-`check:services` verifies DB access/schema and R2 bucket access; it does not prove
+`check:services` verifies DB access/schema and object-storage bucket access; it does not prove
 upload permission or perform a real file upload. Existing master passwords are not changed on subsequent deploys. Store the master credential securely; client owner passwords can be reset from the master console.
 
 ## 4. Build for separate static/WordPress hosting
@@ -158,8 +169,8 @@ uploading it to static hosting. No secret belongs in any `VITE_` variable.
   lead-to-deal workflow, follow-up task, private document download and mobile layout.
 - Print a property brochure and check that owner contacts and internal controls
   are absent. WhatsApp sharing sends listing text; it does not attach gallery photos.
-- Keep PostgreSQL backups and R2 object backups together. Test recovery.
+- Keep PostgreSQL backups and object-storage backups together. Test recovery.
 - Give clients only their workspace credentials. Keep master, database and storage credentials with the platform owner. Agree separately whether a customer also receives a licensed source copy.
 - Specify included support, free-tier limits and ongoing hosting responsibility.
 
-Local preview remains http://127.0.0.1:5173. The old demo remains a legacy workspace in development; `Demo Realty` is an isolated client workspace. The active local backend is connected to the Neon estateflow-crm project under medhi0164@gmail.com. Cloudflare R2 activation awaits explicit usage-based billing approval; hosting has not been deployed.
+Local preview remains http://127.0.0.1:5173. The old demo remains a legacy workspace in development; `Demo Realty` is an isolated client workspace. The active local backend is connected to the Neon estateflow-crm project under medhi0164@gmail.com. Photos/documents use the verified private Neon Free storage bucket. Cloudflare R2 has not been activated; hosting has not been deployed.
